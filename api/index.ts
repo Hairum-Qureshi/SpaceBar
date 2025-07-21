@@ -6,11 +6,10 @@ import colors from "colors";
 import mongoose from "mongoose";
 import authentication from "./routes/authentication";
 import * as Redis from "redis";
+import { app, server } from "./socketIo";
 
 dotenv.config();
 colors.enable();
-
-const app = express();
 
 const corsOptions = {
 	origin: "http://localhost:5174",
@@ -27,7 +26,7 @@ app.use("/api/auth", authentication);
 
 const PORT: string | number = process.env.PORT || 3000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 	const startServer = async () => {
 		try {
 			const conn = await mongoose.connect(process.env.MONGO_URI!);
