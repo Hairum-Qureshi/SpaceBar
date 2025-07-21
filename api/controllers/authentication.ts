@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const signUp = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const { fullName, username, email, password, confirmPassword } = req.body;
+		const { username, email, password, confirmPassword } = req.body;
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 		if (!emailRegex.test(email)) {
@@ -59,7 +59,6 @@ const signUp = async (req: Request, res: Response): Promise<void> => {
 		const user = new User({
 			_id: uuidv4().replace(/-/g, ""),
 			username,
-			fullName,
 			password: hashedPassword,
 			email
 		});
