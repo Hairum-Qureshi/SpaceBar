@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import colors from "colors";
 import mongoose from "mongoose";
 import authentication from "./routes/authentication";
+import * as Redis from "redis";
 
 dotenv.config();
 colors.enable();
@@ -27,7 +28,7 @@ app.use("/api/auth", authentication);
 const PORT: string | number = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-	const connectToMongoDB = async () => {
+	const startServer = async () => {
 		try {
 			const conn = await mongoose.connect(process.env.MONGO_URI!);
 			console.log(
@@ -35,10 +36,22 @@ app.listen(PORT, () => {
 				`${conn.connection.host}`.green.bold
 			);
 			console.log(`Server listening on port ${PORT}!`.yellow.bold);
+
+			const redis_client = Redis.createClient({
+				url: process.env.REDIS_URL
+			});
+
+			redis_client.on("error", err => {
+				console.error("Redis error:".red.bold, err);
+			});
+
+			redis_client.connect().then(() => {
+				console.log("Successfully connected to".yellow, "Redis!".red.bold);
+			});
 		} catch (error) {
 			console.error(error);
 		}
 	};
 
-	connectToMongoDB();
+	startServer();
 });
