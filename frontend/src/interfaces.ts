@@ -5,7 +5,7 @@ interface Conversation {
 	groupName: string;
 	groupPhoto: string;
 	chatTheme: string;
-	chatWallpaper: string; 
+	chatWallpaper: string;
 	media: string[];
 	latestMessage: string;
 	messages: Message[];
@@ -35,4 +35,10 @@ interface Message {
 	updatedAt: Date;
 }
 
-export type { User, Conversation, Message };
+interface AuthStoreState {
+	currUserData: User | null;
+	setCurrUserData: (userData: User) => void;
+	clearUserData: () => void;
+}
+
+export type { User, Conversation, Message, AuthStoreState };
