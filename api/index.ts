@@ -7,6 +7,7 @@ import mongoose from "mongoose";
 import authentication from "./routes/authentication";
 import * as Redis from "redis";
 import { app, server } from "./socketIo";
+import user from "./routes/user";
 
 dotenv.config();
 colors.enable();
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authentication);
+app.use("/api/user", user);
 
 const PORT: string | number = process.env.PORT || 3000;
 
