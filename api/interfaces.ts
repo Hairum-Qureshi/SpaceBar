@@ -5,6 +5,8 @@ interface IMessage {
 	sender: Types.ObjectId;
 	attachments: string[];
 	conversationID: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 interface IConversation {
@@ -19,6 +21,8 @@ interface IConversation {
 	latestMessage: string;
 	messages: IMessage[];
 	admins: Types.ObjectId[];
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 interface IUser {
@@ -29,6 +33,8 @@ interface IUser {
 	profilePicture: string;
 	isVerified: boolean;
 	conversations: IConversation[];
+	createdAt: Date;
+	updatedAt: Date;
 }
 
 export { IUser, IConversation, IMessage };
