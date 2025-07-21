@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import colors from "colors";
+import mongoose from "mongoose";
+import authentication from "./routes/authentication";
 
 dotenv.config();
 colors.enable();
@@ -10,19 +12,33 @@ colors.enable();
 const app = express();
 
 const corsOptions = {
-	origin: "http://localhost:5173", // <-- if your frontend port is different, change it
+	origin: "http://localhost:5174",
 	credentials: true,
 	optionSuccessStatus: 200
 };
 
-// Middleware:
-app.use(cors(corsOptions)); // <-- for CORS
-app.use(cookieParser()); // <-- allows you to read req.cookies
-app.use(express.json()); // <-- without this, req.body won't work (for JSON data being passed to the backend)
-app.use(express.urlencoded({ extended: true })); // <-- without this, you won't be able to read form data
+app.use(cors(corsOptions));
+app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const PORT: string | number = process.env.PORT || 3000; // <-- if your port # is different, change it
+app.use("/api/auth", authentication);
+
+const PORT: string | number = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-	console.log(`Server listening on port ${PORT}!`.yellow.bold);
+	const connectToMongoDB = async () => {
+		try {
+			const conn = await mongoose.connect(process.env.MONGO_URI!);
+			console.log(
+				"Successfully connected to MongoDB on host:".yellow,
+				`${conn.connection.host}`.green.bold
+			);
+			console.log(`Server listening on port ${PORT}!`.yellow.bold);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	connectToMongoDB();
 });
