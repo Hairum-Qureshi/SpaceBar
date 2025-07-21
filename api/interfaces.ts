@@ -24,7 +24,6 @@ interface IConversation {
 interface IUser {
 	_id: string;
 	username: string;
-	fullName: string;
 	password: string;
 	email: string;
 	profilePicture: string;
