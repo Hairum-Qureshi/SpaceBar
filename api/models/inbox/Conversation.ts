@@ -8,7 +8,7 @@ const conversationSchema = new Schema(
 		},
 		users: [
 			{
-				type: Types.ObjectId,
+				type: String,
 				ref: "User"
 			}
 		],
@@ -43,7 +43,7 @@ const conversationSchema = new Schema(
 			}
 		],
 		admins: {
-			type: [Types.ObjectId],
+			type: [String],
 			ref: "User"
 		}
 	},
