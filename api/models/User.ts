@@ -4,7 +4,8 @@ import { IUser } from "../interfaces";
 const userSchema = new Schema(
 	{
 		_id: {
-			type: String
+			type: String,
+			required: true
 		},
 		username: {
 			type: String,
@@ -31,7 +32,7 @@ const userSchema = new Schema(
 			default: false
 		},
 		conversations: {
-			type: [Types.ObjectId],
+			type: [String],
 			ref: "Conversation",
 			default: []
 		}
