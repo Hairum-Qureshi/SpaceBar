@@ -25,7 +25,7 @@ const userSchema = new Schema(
 		profilePicture: {
 			type: String,
 			default:
-				"https://i.pinimg.com/236x/75/ae/6e/75ae6eeeeb590c066ec53b277b614ce3.jpg"
+				"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi3ifIb3hPYy41SzdZHJjED3u0U5hWErjJog&s"
 		},
 		isVerified: {
 			type: Boolean,
