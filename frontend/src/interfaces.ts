@@ -35,10 +35,9 @@ interface Message {
 	updatedAt: Date;
 }
 
-interface AuthStoreState {
-	currUserData: User | null;
-	setCurrUserData: (userData: User) => void;
-	clearUserData: () => void;
+interface ChatStoreState {
+	showChatInfoPanel: boolean;
+	setChatInfoPanelVisibility: (show: boolean) => void;
 }
 
-export type { User, Conversation, Message, AuthStoreState };
+export type { User, Conversation, Message, ChatStoreState };
