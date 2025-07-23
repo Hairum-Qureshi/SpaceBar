@@ -6,7 +6,7 @@ import colors from "colors";
 import mongoose from "mongoose";
 import authentication from "./routes/authentication";
 import * as Redis from "redis";
-import { app, server } from "./socketIo";
+import { app, server } from "./socket";
 import user from "./routes/user";
 import conversation from "./routes/conversation";
 
@@ -29,6 +29,9 @@ app.use("/api/user", user);
 app.use("/api/conversation", conversation);
 
 const PORT: string | number = process.env.PORT || 3000;
+const redis = Redis.createClient({
+	url: process.env.REDIS_URL
+});
 
 server.listen(PORT, () => {
 	const startServer = async () => {
@@ -40,15 +43,11 @@ server.listen(PORT, () => {
 			);
 			console.log(`Server listening on port ${PORT}!`.yellow.bold);
 
-			const redis_client = Redis.createClient({
-				url: process.env.REDIS_URL
-			});
-
-			redis_client.on("error", err => {
+			redis.on("error", err => {
 				console.error("Redis error:".red.bold, err);
 			});
 
-			redis_client.connect().then(() => {
+			redis.connect().then(() => {
 				console.log("Successfully connected to".yellow, "Redis!".red.bold);
 			});
 		} catch (error) {
@@ -58,3 +57,5 @@ server.listen(PORT, () => {
 
 	startServer();
 });
+
+export default redis;
