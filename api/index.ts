@@ -5,16 +5,16 @@ import cookieParser from "cookie-parser";
 import colors from "colors";
 import mongoose from "mongoose";
 import authentication from "./routes/authentication";
-import * as Redis from "redis";
 import { app, server } from "./socket";
 import user from "./routes/user";
 import conversation from "./routes/conversation";
+import { startRedis } from "./redis-config";
 
 dotenv.config();
 colors.enable();
 
 const corsOptions = {
-	origin: "http://localhost:5174",
+	origin: process.env.FRONTEND_URL,
 	credentials: true,
 	optionSuccessStatus: 200
 };
@@ -29,9 +29,6 @@ app.use("/api/user", user);
 app.use("/api/conversation", conversation);
 
 const PORT: string | number = process.env.PORT || 3000;
-const redis = Redis.createClient({
-	url: process.env.REDIS_URL
-});
 
 server.listen(PORT, () => {
 	const startServer = async () => {
@@ -43,13 +40,8 @@ server.listen(PORT, () => {
 			);
 			console.log(`Server listening on port ${PORT}!`.yellow.bold);
 
-			redis.on("error", err => {
-				console.error("Redis error:".red.bold, err);
-			});
+			await startRedis();
 
-			redis.connect().then(() => {
-				console.log("Successfully connected to".yellow, "Redis!".red.bold);
-			});
 		} catch (error) {
 			console.error(error);
 		}
@@ -57,5 +49,3 @@ server.listen(PORT, () => {
 
 	startServer();
 });
-
-export default redis;
