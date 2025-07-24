@@ -9,7 +9,8 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import type { User } from "../interfaces";
 
 export default function App() {
-	const { connectSocket, socket } = useSocketStore();
+	const { connectSocket } = useSocketStore();
+	// const activeUsers = useSocketStore(state => state.activeUsers);
 	const { data: userData } = useCurrentUser();
 
 	useEffect(() => {
@@ -17,15 +18,6 @@ export default function App() {
 			connectSocket(userData._id);
 		}
 	}, [userData]);
-
-	useEffect(() => {
-		if (socket) {
-			const interval = setInterval(() => {
-				socket.emit("ping"); // custom ping
-			}, 10000); // every 10 seconds
-			return () => clearInterval(interval);
-		}
-	}, [socket, userData]);
 
 	return (
 		<BrowserRouter>
