@@ -15,9 +15,8 @@ const io = new Server(server, {
 const updateActiveUsers = async () => {
 	const keys = await redis.keys("active:*");
 	const activeUsers = keys.map(key => key.replace("active:", ""));
-	console.log("activeUsers", activeUsers);
+	// console.log("activeUsers", activeUsers);
 	io.emit("activeUsers", activeUsers);
-	console.log("activeUsers", activeUsers);
 };
 
 let lastUpdateTime = 0;
@@ -38,7 +37,7 @@ async function startRedisSubscriber() {
 
 	sub.subscribe("__keyevent@0__:expired", async key => {
 		if (key.startsWith("active:")) {
-			console.log("Key expired:", key);
+			// console.log("Key expired:", key);
 			await throttle();
 		}
 	});
@@ -51,16 +50,16 @@ io.on("connection", async socket => {
 	const key = `active:${userID}`;
 
 	// Immediately mark user as active
-	await redis.set(key, "online", {
+	await redis.set(key, socket.id, {
 		EX: 30 // Expire in 30 seconds
 	});
 
 	socket.on("ping", async () => {
-		redis.set(key, "online", {
+		redis.set(key, socket.id, {
 			EX: 30 // Expiration in seconds
 		}); // set TTL to 30 seconds
 		// await updateActiveUsers();
-		console.log("PONG!", socket.handshake.auth.userID);
+		// console.log("PONG!", socket.handshake.auth.userID);
 
 		await throttle();
 	});
