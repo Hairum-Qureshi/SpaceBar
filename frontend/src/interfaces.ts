@@ -2,20 +2,20 @@ interface Conversation {
 	_id: string;
 	users: User[];
 	isGroupChat: boolean;
-	groupName: string;
-	groupPhoto: string;
-	chatTheme: string;
-	chatWallpaper: string;
+	groupName?: string;
+	groupPhoto?: string;
+	chatTheme?: string;
+	chatWallpaper?: string;
 	media: string[];
 	latestMessage: string;
 	messages: Message[];
-	admins: User[];
+	admins: User[] | string[];
 	createdAt: Date;
 	updatedAt: Date;
 }
 
 interface User {
-	_id: string;
+	_id?: string;
 	username: string;
 	password?: string;
 	email: string;
