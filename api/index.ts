@@ -28,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authentication);
 app.use("/api/user", user);
 app.use("/api/conversation", conversation);
-app.use("api/message", message);
+app.use("/api/message", message);
 
 const PORT: string | number = process.env.PORT || 3000;
 
