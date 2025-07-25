@@ -1,4 +1,4 @@
-import { Schema, Types, model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { IMessage } from "../../interfaces";
 
 const messageSchema = new Schema(
@@ -8,7 +8,7 @@ const messageSchema = new Schema(
 			required: true
 		},
 		sender: {
-			type: Types.ObjectId,
+			type: String,
 			ref: "User"
 		},
 		attachments: {
@@ -16,7 +16,7 @@ const messageSchema = new Schema(
 			default: []
 		},
 		conversationID: {
-			type: Types.ObjectId,
+			type: String,
 			ref: "Conversation"
 		}
 	},
