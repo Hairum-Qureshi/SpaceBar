@@ -9,6 +9,7 @@ import { app, server } from "./socket";
 import user from "./routes/user";
 import conversation from "./routes/conversation";
 import { startRedis } from "./redis-config";
+import message from "./routes/message";
 
 dotenv.config();
 colors.enable();
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authentication);
 app.use("/api/user", user);
 app.use("/api/conversation", conversation);
+app.use("api/message", message);
 
 const PORT: string | number = process.env.PORT || 3000;
 
@@ -41,7 +43,6 @@ server.listen(PORT, () => {
 			console.log(`Server listening on port ${PORT}!`.yellow.bold);
 
 			await startRedis();
-
 		} catch (error) {
 			console.error(error);
 		}
