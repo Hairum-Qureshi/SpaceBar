@@ -4,8 +4,7 @@ import { IMessage } from "../../interfaces";
 const messageSchema = new Schema(
 	{
 		message: {
-			type: String,
-			required: true
+			type: String
 		},
 		sender: {
 			type: String,
