@@ -40,4 +40,9 @@ interface ChatStoreState {
 	setChatInfoPanelVisibility: (show: boolean) => void;
 }
 
-export type { User, Conversation, Message, ChatStoreState };
+interface ImageFile {
+	dataURL: string;
+	file: File;
+}
+
+export type { User, Conversation, Message, ChatStoreState, ImageFile };
