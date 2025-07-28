@@ -1,31 +1,86 @@
 import { Request, Response } from "express";
 import Message from "../models/inbox/Message";
 import Conversation from "../models/inbox/Conversation";
-import { redis } from "../redis-config";
+import { redis } from "../configs/redis-config";
 import { io } from "../socket";
+import imagekit from "../configs/imagekit-config";
+import fs from "fs";
+import path from "path";
+import { Types } from "mongoose";
+
+async function uploadImages(conversationID: string): Promise<string[]> {
+	const FOLDER_PATH = path.join(__dirname, "..", "./uploads");
+	const urls: string[] = [];
+
+	const files = await fs.promises.readdir(FOLDER_PATH); // Use promise-based fs
+	const uploadPromises = files
+		.filter(file => file.includes(conversationID))
+		.map(file => {
+			const uploadedImagePath = path.resolve(FOLDER_PATH, file);
+			const fileBuffer = fs.readFileSync(uploadedImagePath);
+
+			return imagekit
+				.upload({
+					file: fileBuffer,
+					fileName: file
+				})
+				.then(response => {
+					urls.push(response.url);
+
+					fs.unlink(path.join(FOLDER_PATH, file), err => {
+						if (err) throw err;
+					});
+				})
+				.catch(error => {
+					console.error("Image upload error:", error);
+				});
+		});
+
+	await Promise.all(uploadPromises);
+
+	return urls;
+}
 
 const sendMessage = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const { message, userID, conversationID } = req.body;
+		const { message, userID, conversationID, imagesSent } = req.body;
 		const currUID = req.user._id;
 
-		if (!message) {
+		if (imagesSent === "false" && !message) {
+			// yes, false has to be a string here
 			res.status(400).json({ error: "Message is required" });
 			return;
 		}
 
-		const savedMessage = new Message({
-			message,
-			sender: currUID,
-			conversationID
-		});
+		let createdMessageID: Types.ObjectId;
+		if (imagesSent === "true") {
+			// yes, true has to be a string as well
+			const uploadedImageURLs: string[] = await uploadImages(conversationID);
+			const savedMessageWithImages = new Message({
+				message,
+				sender: currUID,
+				conversationID,
+				attachments: uploadedImageURLs
+			});
 
-		await savedMessage.save();
+			await savedMessageWithImages.save();
+
+			createdMessageID = savedMessageWithImages._id;
+		} else {
+			const savedMessage = new Message({
+				message,
+				sender: currUID,
+				conversationID
+			});
+
+			await savedMessage.save();
+			createdMessageID = savedMessage._id;
+		}
 
 		const updatedConversation = await Conversation.findByIdAndUpdate(
 			conversationID,
 			{
-				$push: { messages: savedMessage._id }
+				$push: { messages: createdMessageID._id }
 			},
 			{
 				new: true
