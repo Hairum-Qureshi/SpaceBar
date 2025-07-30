@@ -4,7 +4,8 @@ import {
 	createConversation,
 	getAllChatMessages,
 	getAllConversations,
-	getConversationByID
+	getConversationByID,
+	getConversationData
 } from "../controllers/conversation";
 
 const router = express.Router();
@@ -15,5 +16,6 @@ router.get("/all", isAuthenticated, getAllConversations);
 // TODO - add middleware:
 router.get("/:conversationID", isAuthenticated, getConversationByID);
 router.get("/:conversationID/messages", isAuthenticated, getAllChatMessages);
+router.get("/:conversationID/data", isAuthenticated, getConversationData);
 
 export default router;
