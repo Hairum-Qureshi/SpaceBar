@@ -37,4 +37,11 @@ interface IUser {
 	updatedAt: Date;
 }
 
-export { IUser, IConversation, IMessage };
+interface MinimalUserData {
+	_id: string;
+	username: string;
+	profilePicture: string;
+	isVerified: boolean;
+}
+
+export { IUser, IConversation, IMessage, MinimalUserData };
