@@ -7,6 +7,7 @@ import useSocketStore from "../stores/useSocketStore";
 import { useEffect } from "react";
 import { useCurrentUser } from "../hooks/useCurrentUser";
 import type { User } from "../interfaces";
+import Settings from "./Settings";
 
 export default function App() {
 	const { connectSocket } = useSocketStore();
@@ -26,6 +27,7 @@ export default function App() {
 				<Route path="/sign-in" element={<SignIn />} />
 				<Route path="/" element={<Home />} />
 				<Route path="/conversation/:conversationID" element={<Home />} />
+				<Route path="/settings" element={<Settings />} />
 				{/* <Route path="*" element={<NotFound />} />  */}
 			</Routes>
 		</BrowserRouter>
