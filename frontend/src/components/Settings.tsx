@@ -4,14 +4,31 @@ import { FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { MdContentCopy } from "react-icons/md";
 import moment from "moment";
+import { Bounce, toast, ToastContainer } from "react-toastify";
 
 export default function Settings() {
 	const { data: userData } = useCurrentUser();
 
-	// TODO - add a toast notification for when you copy the UID
+	// TODO - style toast notification
+	// TODO - allow user to change pfp
+
+	const notify = () => toast("User ID copied!");
 
 	return (
 		<div className="w-full bg-zinc-950 p-3 min-h-screen flex justify-center items-start">
+			<ToastContainer
+				position="bottom-right"
+				autoClose={2000}
+				hideProgressBar
+				newestOnTop={false}
+				closeOnClick
+				rtl={false}
+				pauseOnFocusLoss
+				draggable
+				theme="dark"
+				pauseOnHover={false}
+				transition={Bounce}
+			/>
 			<div className="w-full max-w-4xl relative min-h-screen rounded-lg overflow-hidden shadow-xl">
 				<div className="relative z-10 backdrop-blur-sm bg-black/60 text-white p-6 space-y-6">
 					<div className="hover:cursor-pointer">
@@ -58,7 +75,10 @@ export default function Settings() {
 								</span>
 								<span
 									className="text-white ml-2 hover:cursor-pointer"
-									onClick={() => navigator.clipboard.writeText(userData?._id)}
+									onClick={() => {
+										navigator.clipboard.writeText(userData?._id);
+										notify();
+									}}
 								>
 									<MdContentCopy />
 								</span>
