@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import Conversation from "../models/inbox/Conversation";
-import { IConversation } from "../interfaces";
+import { IConversation, MinimalUserData } from "../interfaces";
 import { v4 as uuidv4 } from "uuid";
 import User from "../models/User";
 import "../models/inbox/Message";
+import Message from "../models/inbox/Message";
 
 const createConversation = async (
 	req: Request,
@@ -163,4 +164,50 @@ const getAllChatMessages = async (
 	}
 };
 
-export { createConversation, getAllConversations, getConversationByID, getAllChatMessages };
+const getConversationData = async (
+	req: Request,
+	res: Response
+): Promise<void> => {
+	try {
+		const { conversationID } = req.params;
+		const currUID = req.user._id;
+
+		const conversation: IConversation = (await Conversation.findById(
+			conversationID
+		).populate({
+			path: "users",
+			select: "_id username profilePicture"
+		})) as IConversation;
+
+		const conversationImages = await Message.find({
+			conversationID,
+			attachments: {
+				$exists: true,
+				$ne: []
+			}
+		});
+
+		const conversationMembers: MinimalUserData[] =
+			conversation.users as unknown as MinimalUserData[];
+
+		res.status(200).json({
+			conversationImages,
+			conversationMembers
+		});
+	} catch (error) {
+		console.error(
+			"Error in conversation.ts file, getConversationData function controller"
+				.red.bold,
+			error
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export {
+	createConversation,
+	getAllConversations,
+	getConversationByID,
+	getAllChatMessages,
+	getConversationData
+};
