@@ -45,4 +45,18 @@ interface ImageFile {
 	file: File;
 }
 
-export type { User, Conversation, Message, ChatStoreState, ImageFile };
+interface MinimalUserData {
+	_id: string;
+	username: string;
+	profilePicture: string;
+	isVerified: boolean;
+}
+
+export type {
+	User,
+	Conversation,
+	Message,
+	ChatStoreState,
+	ImageFile,
+	MinimalUserData
+};
