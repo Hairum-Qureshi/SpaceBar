@@ -170,7 +170,6 @@ const getConversationData = async (
 ): Promise<void> => {
 	try {
 		const { conversationID } = req.params;
-		const currUID = req.user._id;
 
 		const conversation: IConversation = (await Conversation.findById(
 			conversationID
