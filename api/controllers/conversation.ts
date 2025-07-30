@@ -184,7 +184,7 @@ const getConversationData = async (
 				$exists: true,
 				$ne: []
 			}
-		});
+		}).select({ attachments: 1, _id: 0 });
 
 		const conversationMembers: MinimalUserData[] =
 			conversation.users as unknown as MinimalUserData[];
