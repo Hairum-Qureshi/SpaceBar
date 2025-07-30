@@ -45,27 +45,31 @@ export default function ChatInfoPanel() {
 				<h4 className="text-slate-300 font-semibold text-lg mb-5 text-center">
 					Uploaded Images
 				</h4>
-				<div className="grid grid-cols-2 gap-2">
-					{conversationData?.conversationImages.map(
-						(imageURL: { attachments: string }) => {
-							return (
-								<div className="relative w-40 h-40">
+				<div className="grid grid-cols-2 gap-2 w-full">
+					{conversationData?.conversationImages?.length ? (
+						conversationData.conversationImages.map((imageObj, i) =>
+							(imageObj.attachments as unknown as string[]).map((image, j) => (
+								<div className="relative w-40 h-40" key={`${i}-${j}`}>
 									<img
-										src={imageURL.attachments}
-										alt="Uploaded image"
+										src={image}
+										alt={`Uploaded image ${i}-${j}`}
 										className="w-full h-full rounded-md object-cover border border-purple-600"
 									/>
 									<span
 										className="absolute bottom-1 right-1 p-1 rounded-md bg-black hover:cursor-pointer"
-										onClick={async () =>
-											await handleDownload(imageURL.attachments)
-										}
+										onClick={async () => await handleDownload(image)}
 									>
 										<FaDownload />
 									</span>
 								</div>
-							);
-						}
+							))
+						)
+					) : (
+						<div className="col-span-2 flex justify-center items-center w-full py-10">
+							<h2 className="text-purple-700 font-semibold">
+								There are currently no images uploaded
+							</h2>
+						</div>
 					)}
 				</div>
 			</div>
