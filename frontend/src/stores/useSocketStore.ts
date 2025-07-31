@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { io, Socket } from "socket.io-client";
 
 interface MessagePayload {
+	createdMessageID: string;
 	conversationID: string;
 	username: string;
 	profilePicture: string;
