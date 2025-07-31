@@ -33,6 +33,10 @@ async function uploadImages(conversationID: string): Promise<string[]> {
 				})
 				.catch(error => {
 					console.error("Image upload error:", error);
+
+					fs.unlink(path.join(FOLDER_PATH, file), err => {
+						if (err) throw err;
+					});
 				});
 		});
 
@@ -88,8 +92,18 @@ const sendMessage = async (req: Request, res: Response): Promise<void> => {
 		);
 
 		const socketID = await redis.get(`active:${userID}`);
+
+		// TODO - will need to handle group chat case
+		const messagePayload = {
+			messageID: createdMessageID,
+			conversationID,
+			username: req.user.username,
+			profilePicture: req.user.profilePicture,
+			message,
+			containedImages: imagesSent === "true" // yes it has to be a string
+		};
 		if (socketID) {
-			io.to(socketID).emit("newMessage", conversationID);
+			io.to(socketID).emit("newMessage", messagePayload);
 		}
 
 		res.status(200).json(updatedConversation);
