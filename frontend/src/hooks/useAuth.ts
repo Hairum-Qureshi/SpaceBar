@@ -6,6 +6,13 @@ import useSocketStore from "../stores/useSocketStore";
 import type { User } from "../interfaces";
 import { useState } from "react";
 
+interface FormErrors {
+	usernameFieldError?: boolean;
+	emailFieldError: boolean;
+	passwordFieldError: boolean;
+	confirmPasswordFieldError?: boolean;
+}
+
 interface AuthTools {
 	signUp: (
 		event: React.FormEvent,
@@ -14,19 +21,16 @@ interface AuthTools {
 		password: string,
 		confirmPassword: string
 	) => void;
-	signIn: (
-		event: React.FormEvent,
-		username: string,
-		email: string,
-		password: string
-	) => void;
+	signIn: (event: React.FormEvent, email: string, password: string) => void;
 	signOut: () => void;
 	signUpIsPending: boolean;
 	signInIsPending: boolean;
 	signOutIsPending: boolean;
-	validator: (password: string) => void;
+	validator: (password: string, confirmPassword?: string) => void;
 	passContainsNumsAndSymbols: boolean;
 	passwordLengthValid: boolean;
+	formErrors: FormErrors;
+	passwordsMatch: boolean;
 }
 
 export default function useAuth(): AuthTools {
@@ -36,6 +40,13 @@ export default function useAuth(): AuthTools {
 	const [passContainsNumsAndSymbols, setPassContainsNumsAndSymbols] =
 		useState(false);
 	const [passwordLengthValid, setPasswordLengthValid] = useState(false);
+	const [formErrors, setFormErrors] = useState<FormErrors>({
+		usernameFieldError: false,
+		emailFieldError: false,
+		passwordFieldError: false,
+		confirmPasswordFieldError: false
+	});
+	const [passwordsMatch, setPasswordsMatch] = useState(false);
 
 	const {
 		mutate: signUpMutate,
@@ -73,14 +84,29 @@ export default function useAuth(): AuthTools {
 				if (axios.isAxiosError(error)) {
 					toast(error.response?.data.error, {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
+					if (error.response?.data.error === "Username already taken") {
+						setFormErrors({
+							...formErrors,
+							usernameFieldError: true
+						});
+					}
+					if (error.response?.data.error === "Email already taken") {
+						setFormErrors({
+							...formErrors,
+							emailFieldError: true
+						});
+					}
 				} else {
 					toast("An unknown error occurred", {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
 				}
+				throw error;
 			}
 		},
 		onSuccess: () => {
@@ -104,18 +130,16 @@ export default function useAuth(): AuthTools {
 		// error: signInError
 	} = useMutation({
 		mutationFn: async ({
-			username,
 			email,
 			password
 		}: {
-			username: string;
 			email: string;
 			password: string;
 		}) => {
 			try {
 				const response = await axios.post(
 					`${import.meta.env.VITE_BACKEND_BASE_URL}/api/auth/sign-in`,
-					{ username, email, password },
+					{ email, password },
 					{
 						withCredentials: true
 					}
@@ -126,14 +150,31 @@ export default function useAuth(): AuthTools {
 				if (axios.isAxiosError(error)) {
 					toast(error.response?.data.error, {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
+					if (error.response?.data.error === "Email is required") {
+						setFormErrors({
+							...formErrors,
+							emailFieldError: true
+						});
+					}
+					if (error.response?.data.error === "Invalid email or password") {
+						setFormErrors({
+							...formErrors,
+							usernameFieldError: true,
+							passwordFieldError: true
+						});
+					}
 				} else {
 					toast("An unknown error occurred", {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
 				}
+
+				throw error;
 			}
 		},
 		onSuccess: () => {
@@ -150,7 +191,7 @@ export default function useAuth(): AuthTools {
 		}
 	});
 
-	function validator(password: string) {
+	function validator(password: string, confirmPassword?: string) {
 		if (!password) {
 			setPasswordLengthValid(false);
 			setPassContainsNumsAndSymbols(false);
@@ -166,6 +207,23 @@ export default function useAuth(): AuthTools {
 		) {
 			setPassContainsNumsAndSymbols(true);
 		}
+
+		if (password === confirmPassword) {
+			setPasswordsMatch(true);
+		} else {
+			setPasswordsMatch(false);
+		}
+	}
+
+	function clearErrors() {
+		setTimeout(() => {
+			setFormErrors({
+				usernameFieldError: false,
+				emailFieldError: false,
+				passwordFieldError: false,
+				confirmPasswordFieldError: false
+			});
+		}, 1100);
 	}
 
 	function signUp(
@@ -177,71 +235,114 @@ export default function useAuth(): AuthTools {
 	) {
 		event.preventDefault();
 
-		if (!username || !email || !password || !confirmPassword) {
+		// Check for empty fields
+		const fieldErrors = {
+			usernameFieldError: !username,
+			emailFieldError: !email,
+			passwordFieldError: !password,
+			confirmPasswordFieldError: !confirmPassword
+		};
+
+		const hasEmptyFields = Object.values(fieldErrors).some(Boolean);
+		if (hasEmptyFields) {
+			setFormErrors(fieldErrors);
 			toast("Please fill in all fields", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
 			return;
 		}
 
+		// Password match check
 		if (password !== confirmPassword) {
+			setFormErrors({
+				usernameFieldError: false,
+				emailFieldError: false,
+				passwordFieldError: true,
+				confirmPasswordFieldError: true
+			});
 			toast("Passwords do not match", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
+			return;
 		}
 
+		// Password length check
 		if (password.length < 6) {
+			setFormErrors({
+				usernameFieldError: false,
+				emailFieldError: false,
+				passwordFieldError: true,
+				confirmPasswordFieldError: false
+			});
 			toast("Password must be at least 6 characters long", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
 			return;
 		}
 
+		// Password number check
 		if (!/\d/.test(password)) {
+			setFormErrors({
+				usernameFieldError: false,
+				emailFieldError: false,
+				passwordFieldError: true,
+				confirmPasswordFieldError: false
+			});
 			toast("Password must contain at least one number", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
 			return;
 		}
 
-		if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) {
+		// Password symbol check
+		if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+			setFormErrors({
+				usernameFieldError: false,
+				emailFieldError: false,
+				passwordFieldError: true,
+				confirmPasswordFieldError: false
+			});
 			toast("Password must contain at least one symbol", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
 			return;
 		}
 
-		if (password !== confirmPassword) {
-			toast("Passwords do not match", {
-				autoClose: 700,
-				hideProgressBar: true
-			});
-			return;
-		}
-
+		// All validations passed
 		signUpMutate({ username, email, password, confirmPassword });
 	}
 
-	function signIn(
-		event: React.FormEvent,
-		username: string,
-		email: string,
-		password: string
-	) {
+	function signIn(event: React.FormEvent, email: string, password: string) {
 		event.preventDefault();
 
-		if (!username || !email || !password) {
+		if (!email || !password) {
+			setFormErrors({
+				emailFieldError: !email,
+				passwordFieldError: !password
+			});
 			toast("Please fill in all fields", {
 				autoClose: 700,
-				hideProgressBar: true
+				hideProgressBar: true,
+				type: "error"
 			});
+			clearErrors();
 		} else {
-			signInMutate({ username, email, password });
+			signInMutate({ email, password });
 		}
 	}
 
@@ -266,12 +367,14 @@ export default function useAuth(): AuthTools {
 				if (axios.isAxiosError(error)) {
 					toast(error.response?.data.error, {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
 				} else {
 					toast("An unknown error occurred", {
 						autoClose: 600,
-						hideProgressBar: true
+						hideProgressBar: true,
+						type: "error"
 					});
 				}
 			}
@@ -296,6 +399,8 @@ export default function useAuth(): AuthTools {
 		signOutIsPending,
 		validator,
 		passContainsNumsAndSymbols,
-		passwordLengthValid
+		passwordLengthValid,
+		formErrors,
+		passwordsMatch
 	};
 }
