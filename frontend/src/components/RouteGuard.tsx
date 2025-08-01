@@ -3,9 +3,9 @@ import { useCurrentUser } from "../hooks/useCurrentUser";
 import type { ReactNode } from "react";
 
 export default function ProtectedRoute({ children }: { children: ReactNode }) {
-	const { data: userData } = useCurrentUser();
+	const { data: userData, isPending } = useCurrentUser();
 
-	if (!userData) {
+	if (!userData && !isPending) {
 		return <Navigate to="/sign-up" />;
 	}
 
