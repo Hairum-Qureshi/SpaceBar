@@ -24,7 +24,7 @@ export default function SignUp() {
 	// TODO - add toast notif
 
 	return (
-		<div className="bg-black h-screen w-full flex text-white">
+		<div className="bg-black min-h-screen max-h-auto lg:w-full lg:flex text-white">
 			<ToastContainer
 				position="top-right"
 				autoClose={2000}
@@ -38,13 +38,13 @@ export default function SignUp() {
 				pauseOnHover={false}
 				transition={Bounce}
 			/>
-			<div className="rounded-2xl w-1/2 h-screen flex items-center justify-center">
+			<div className="lg:rounded-2xl lg:w-2/3 md:w-full flex items-center justify-center">
 				<img src={spaceImage} alt="Space Image" />
 			</div>
-			<div className="bg-zinc-950 rounded-2xl w-1/2 flex justify-center items-center border-2 border-zinc-600">
-				<div className="w-3/4 -mt-5">
+			<div className="bg-zinc-950 lg:rounded-2xl lg:w-2/3 md:w-full flex justify-center items-center lg:border-2 lg:border-zinc-600">
+				<div className="w-3/4 -mt-5 md:overflow-y-scroll md:min-h-screen md:max-h-auto">
 					<div className="mb-8 text-center">
-						<h1 className="text-zinc-400 text-4xl mb-3">
+						<h1 className="text-zinc-400 lg:text-4xl mb-3 md:mt-10">
 							Join <span className="text-sky-500">Space Bar</span>
 						</h1>
 						<h3 className="text-zinc-300 text-xl">
@@ -229,7 +229,7 @@ export default function SignUp() {
 							</p>
 						</div>
 						<button
-							className="p-2 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer"
+							className="p-2 mb-10 md:mb-10 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer"
 							disabled={signUpIsPending}
 							type="submit"
 						>
