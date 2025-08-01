@@ -8,7 +8,7 @@ import authentication from "./routes/authentication";
 import { app, server } from "./socket";
 import user from "./routes/user";
 import conversation from "./routes/conversation";
-import { startRedis } from "./redis-config";
+import { startRedis } from "./configs/redis-config";
 import message from "./routes/message";
 
 dotenv.config();
@@ -42,7 +42,7 @@ server.listen(PORT, () => {
 			);
 			console.log(`Server listening on port ${PORT}!`.yellow.bold);
 
-			await startRedis();
+			await startRedis;
 		} catch (error) {
 			console.error(error);
 		}
@@ -50,3 +50,4 @@ server.listen(PORT, () => {
 
 	startServer();
 });
+
