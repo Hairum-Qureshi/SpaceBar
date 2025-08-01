@@ -27,7 +27,7 @@ const useSocketStore = create<SocketStore>(set => ({
 			auth: { userID } // if you're sending auth info
 		});
 
-		if (socket.connected) set({ socket });
+		set({ socket });
 
 		socket.on("connect", () => {
 			console.log("Connected:", socket.id);
