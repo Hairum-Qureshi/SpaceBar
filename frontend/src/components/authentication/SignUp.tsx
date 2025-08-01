@@ -1,14 +1,23 @@
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
+import { useState } from "react";
+import spaceImage from "../../assets/auth-forms-image.jpg";
 
 export default function SignUp() {
+	const [username, setUsername] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [confirmPassword, setConfirmPassword] = useState("");
+
+	const { signUp, signUpIsPending } = useAuth();
+
+	// TODO - add toast notif
+
 	return (
 		<div className="bg-black h-screen w-full flex text-white">
 			<div className="rounded-2xl w-1/2 h-screen flex items-center justify-center">
-				<img
-					src="https://wallpapers.com/images/hd/space-aesthetic-black-hole-wb4c4xi7jd6b1oy3.jpg"
-					alt="Space Image"
-				/>
+				<img src={spaceImage} alt="Space Image" />
 			</div>
 			<div className="bg-zinc-950 rounded-2xl w-1/2 flex justify-center items-center border-2 border-zinc-600">
 				<div className="w-3/4">
@@ -19,9 +28,19 @@ export default function SignUp() {
 						<h3 className="text-zinc-300 text-xl">
 							Start texting now with friends
 						</h3>
+						<p className="mt-3 -mb-3">
+							Already have an account?&nbsp;
+							<Link to="/sign-in" className="text-sky-500">
+								Sign in
+							</Link>
+						</p>
 					</div>
-					<form action="">
-						<div className="mt-4">
+					<form
+						onSubmit={e =>
+							signUp(e, username, email, password, confirmPassword)
+						}
+					>
+						<div>
 							<div className="flex items-center">
 								<button className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 mr-1 hover:cursor-pointer">
 									<span>
@@ -48,6 +67,8 @@ export default function SignUp() {
 										type="text"
 										placeholder="Username"
 										className="w-full outline-none p-2 text-base bg-slate-900 rounded-md border border-sky-600 mr-2"
+										value={username}
+										onChange={e => setUsername(e.target.value)}
 									/>
 								</div>
 								<div className="flex flex-col w-1/2">
@@ -56,6 +77,8 @@ export default function SignUp() {
 										type="email"
 										placeholder="Email"
 										className="w-full outline-none p-2 text-base bg-slate-900 rounded-md border border-sky-600 ml-2"
+										value={email}
+										onChange={e => setEmail(e.target.value)}
 									/>
 								</div>
 							</div>
@@ -65,6 +88,8 @@ export default function SignUp() {
 									type="password"
 									placeholder="Password"
 									className="outline-none p-2 text-base bg-slate-900 rounded-md w-full my-2 border border-sky-600"
+									value={password}
+									onChange={e => setPassword(e.target.value)}
 								/>
 								<div className="text-sm text-slate-600 mb-3">
 									<p>Password must contain letters, numbers, and symbols</p>
@@ -84,6 +109,8 @@ export default function SignUp() {
 									type="password"
 									placeholder="Confirm Password"
 									className="outline-none p-2 text-base bg-slate-900 rounded-md w-full my-2 border border-sky-600"
+									value={confirmPassword}
+									onChange={e => setConfirmPassword(e.target.value)}
 								/>
 							</div>
 							<p className="text-sm my-2 text-slate-500">
@@ -95,8 +122,12 @@ export default function SignUp() {
 								</Link>
 							</p>
 						</div>
-						<button className="p-2 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer">
-							Sign Up
+						<button
+							className="p-2 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer"
+							disabled={signUpIsPending}
+							type="submit"
+						>
+							{signUpIsPending ? "Loading..." : "Sign Up"}
 						</button>
 					</form>
 				</div>
