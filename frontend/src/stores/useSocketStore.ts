@@ -24,7 +24,7 @@ const useSocketStore = create<SocketStore>(set => ({
 	messagePayload: undefined,
 	connectSocket: userID => {
 		const socket = io("http://localhost:3000", {
-			auth: { userID } // if you're sending auth info
+			auth: { userID }
 		});
 
 		set({ socket });
@@ -43,6 +43,18 @@ const useSocketStore = create<SocketStore>(set => ({
 
 		socket.on("newMessage", (messagePayload: MessagePayload) => {
 			set({ messagePayload });
+
+			Notification.requestPermission().then(permission => {
+				if (permission === "granted") {
+					new Notification(
+						`@${messagePayload.username} just sent you a message!`,
+						{
+							body: messagePayload.message, // truncate
+							icon: messagePayload.profilePicture
+						}
+					);
+				}
+			});
 		});
 
 		socket.on("disconnect", () => {
