@@ -78,18 +78,29 @@ const signUp = async (req: Request, res: Response): Promise<void> => {
 
 const signIn = async (req: Request, res: Response): Promise<void> => {
 	try {
-		const { username, password } = req.body;
+		const { email, password } = req.body;
 
-		const user: IUser | undefined = (await User.findOne({ username })) as
-			| IUser
-			| undefined;
-		const correctPassword = await bcrypt.compare(
-			password,
-			user?.password || ""
-		);
+		if (!email) {
+			res.status(400).json({ error: "Email is required" });
+			return;
+		}
 
-		if (!user || !correctPassword) {
-			res.status(401).json({ error: "Invalid username or password" });
+		if (!password) {
+			res.status(400).json({ error: "Password is required" });
+			return;
+		}
+
+		const user = await User.findOne({ email });
+
+		if (!user) {
+			res.status(401).json({ error: "Invalid email or password" });
+			return;
+		}
+
+		const correctPassword = await bcrypt.compare(password, user.password);
+
+		if (!correctPassword) {
+			res.status(401).json({ error: "Invalid email or password" });
 			return;
 		}
 
@@ -107,6 +118,7 @@ const signIn = async (req: Request, res: Response): Promise<void> => {
 
 const signOut = async (req: Request, res: Response) => {
 	try {
+		const currUID = req.user._id;
 		res
 			.cookie("auth-token", "", {
 				maxAge: 0
