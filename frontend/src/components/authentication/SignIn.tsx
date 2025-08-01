@@ -1,12 +1,23 @@
 import { FaApple, FaGoogle } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import useAuth from "../../hooks/useAuth";
+import { useState } from "react";
+import spaceImage from "../../assets/auth-forms-image.jpg";
 
 export default function SignIn() {
+	const [username, setUsername] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+
+	const { signIn, signInIsPending } = useAuth();
+
+	// TODO - add toast notif
+
 	return (
 		<div className="bg-black h-screen w-full flex text-white">
 			<div className="rounded-2xl w-1/2 h-screen flex items-center justify-center">
 				<img
-					src="https://wallpapers.com/images/hd/space-aesthetic-black-hole-wb4c4xi7jd6b1oy3.jpg"
+					src={spaceImage}
 					alt="Space Image"
 				/>
 			</div>
@@ -23,7 +34,7 @@ export default function SignIn() {
 							</Link>
 						</p>
 					</div>
-					<form action="">
+					<form onSubmit={e => signIn(e, username, email, password)}>
 						<div>
 							<div className="flex items-center">
 								<button className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 mr-1 hover:cursor-pointer">
@@ -51,6 +62,8 @@ export default function SignIn() {
 										type="text"
 										placeholder="Username"
 										className="w-full outline-none p-2 text-base bg-slate-900 rounded-md border border-sky-600 mr-2"
+										value={username}
+										onChange={e => setUsername(e.target.value)}
 									/>
 								</div>
 								<div className="flex flex-col w-1/2">
@@ -59,6 +72,8 @@ export default function SignIn() {
 										type="email"
 										placeholder="Email"
 										className="w-full outline-none p-2 text-base bg-slate-900 rounded-md border border-sky-600 ml-2"
+										value={email}
+										onChange={e => setEmail(e.target.value)}
 									/>
 								</div>
 							</div>
@@ -68,11 +83,18 @@ export default function SignIn() {
 									type="password"
 									placeholder="Password"
 									className="outline-none p-2 text-base bg-slate-900 rounded-md w-full my-2 border border-sky-600"
+									value={password}
+									onChange={e => setPassword(e.target.value)}
 								/>
 							</div>
 						</div>
-						<button className="p-2 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer">
-							Sign In
+						<button
+							className="p-2 w-full text-lg rounded-md mt-8 bg-blue-950 hover:cursor-pointer"
+							onSubmit={e => signIn(e, username, email, password)}
+							disabled={signInIsPending}
+							type="submit"
+						>
+							{signInIsPending ? "Loading..." : "Sign In"}
 						</button>
 					</form>
 				</div>
