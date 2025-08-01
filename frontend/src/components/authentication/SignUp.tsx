@@ -10,7 +10,13 @@ export default function SignUp() {
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
 
-	const { signUp, signUpIsPending } = useAuth();
+	const {
+		signUp,
+		signUpIsPending,
+		validator,
+		passContainsNumsAndSymbols,
+		passwordLengthValid
+	} = useAuth();
 
 	// TODO - add toast notif
 
@@ -90,16 +96,53 @@ export default function SignUp() {
 									className="outline-none p-2 text-base bg-slate-900 rounded-md w-full my-2 border border-sky-600"
 									value={password}
 									onChange={e => setPassword(e.target.value)}
+									onInput={e => validator(e.currentTarget.value)}
 								/>
-								<div className="text-sm text-slate-600 mb-3">
+								<div className={`text-sm text-slate-600 mb-3`}>
 									<p>Password must contain letters, numbers, and symbols</p>
 									<div className="flex items-center">
-										<div className="w-3 h-3 rounded-full border border-slate-600 my-2"></div>
-										<p className="ml-2">Contains numbers & symbols</p>
+										<div
+											className={`w-3 h-3 rounded-full border ${
+												!password
+													? "border-slate-600"
+													: !passContainsNumsAndSymbols
+													? "border-red-500 bg-red-600"
+													: "border-green-500 bg-green-600"
+											} my-2`}
+										></div>
+										<p
+											className={`ml-2 ${
+												!password
+													? "text-slate-600"
+													: !passContainsNumsAndSymbols
+													? "text-red-600"
+													: "text-green-600"
+											}`}
+										>
+											Contains numbers & symbols
+										</p>
 									</div>
 									<div className="flex items-center">
-										<div className="w-3 h-3 rounded-full border border-slate-600 my-2"></div>
-										<p className="ml-2">6+ characters long</p>
+										<div
+											className={`w-3 h-3 rounded-full border ${
+												!password
+													? "border-slate-600"
+													: !passwordLengthValid
+													? "border-red-500 bg-red-600"
+													: "border-green-500 bg-green-600"
+											} my-2`}
+										></div>
+										<p
+											className={`ml-2 ${
+												!password
+													? "text-slate-600"
+													: !passwordLengthValid
+													? "text-red-600"
+													: "text-green-600"
+											}`}
+										>
+											6+ characters long
+										</p>
 									</div>
 								</div>
 							</div>
