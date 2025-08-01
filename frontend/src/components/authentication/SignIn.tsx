@@ -6,7 +6,6 @@ import spaceImage from "../../assets/auth-forms-image.jpg";
 import { Bounce, ToastContainer } from "react-toastify";
 
 export default function SignIn() {
-	const [username, setUsername] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
