@@ -5,14 +5,17 @@ import { Link } from "react-router-dom";
 import { MdContentCopy } from "react-icons/md";
 import moment from "moment";
 import { Bounce, toast, ToastContainer } from "react-toastify";
+import useAuth from "../hooks/useAuth";
 
 export default function Settings() {
 	const { data: userData } = useCurrentUser();
 
 	// TODO - style toast notification
 	// TODO - allow user to change pfp
+	// TODO - add toggle option to disable Notifications
 
 	const notify = () => toast("User ID copied!");
+	const { signOut } = useAuth();
 
 	return (
 		<div className="w-full bg-zinc-950 p-3 min-h-screen flex justify-center items-start">
@@ -67,7 +70,7 @@ export default function Settings() {
 								</span>
 							</div>
 						</p>
-						<p className="text-gray-300">
+						<div className="text-gray-300">
 							<div className="flex items-center">
 								<span>Shareable User ID:</span>
 								<span className="font-mono text-pink-600 ml-2">
@@ -91,12 +94,15 @@ export default function Settings() {
 									Share your UID with friends to start a conversation with them
 								</p>
 							</span>
-						</p>
+						</div>
 					</div>
 
 					{/* Actions Section */}
-					<div className="">
-						<button className="bg-purple-700 hover:bg-purple-800 text-white font-semibold p-2 rounded-md w-36 mr-2 hover:cursor-pointer">
+					<div>
+						<button
+							className="bg-purple-700 hover:bg-purple-800 text-white font-semibold p-2 rounded-md w-36 mr-2 hover:cursor-pointer"
+							onClick={() => signOut()}
+						>
 							Sign Out
 						</button>
 						<button className="bg-red-600 hover:bg-red-700 text-white font-semibold p-2 rounded-md w-36 hover:cursor-pointer">
