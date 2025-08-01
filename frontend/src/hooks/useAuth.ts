@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useSocketStore from "../stores/useSocketStore";
 import type { User } from "../interfaces";
+import { useState } from "react";
 
 interface AuthTools {
 	signUp: (
@@ -23,12 +24,18 @@ interface AuthTools {
 	signUpIsPending: boolean;
 	signInIsPending: boolean;
 	signOutIsPending: boolean;
+	validator: (password: string) => void;
+	passContainsNumsAndSymbols: boolean;
+	passwordLengthValid: boolean;
 }
 
 export default function useAuth(): AuthTools {
 	const navigate = useNavigate();
 	const { socket, connectSocket } = useSocketStore();
 	const queryClient = useQueryClient();
+	const [passContainsNumsAndSymbols, setPassContainsNumsAndSymbols] =
+		useState(false);
+	const [passwordLengthValid, setPasswordLengthValid] = useState(false);
 
 	const {
 		mutate: signUpMutate,
@@ -142,6 +149,24 @@ export default function useAuth(): AuthTools {
 			navigate("/");
 		}
 	});
+
+	function validator(password: string) {
+		if (!password) {
+			setPasswordLengthValid(false);
+			setPassContainsNumsAndSymbols(false);
+		}
+
+		if (password.length > 6) {
+			setPasswordLengthValid(true);
+		}
+
+		if (
+			/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]+/.test(password) &&
+			/\d/.test(password)
+		) {
+			setPassContainsNumsAndSymbols(true);
+		}
+	}
 
 	function signUp(
 		event: React.FormEvent,
@@ -268,6 +293,9 @@ export default function useAuth(): AuthTools {
 		signOut,
 		signUpIsPending,
 		signInIsPending,
-		signOutIsPending
+		signOutIsPending,
+		validator,
+		passContainsNumsAndSymbols,
+		passwordLengthValid
 	};
 }
