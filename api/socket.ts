@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
-import { redis } from "./redis-config";
+import { redis } from "./configs/redis-config";
 
 const app = express();
 const server = http.createServer(app);
@@ -13,10 +13,13 @@ const io = new Server(server, {
 });
 
 const updateActiveUsers = async () => {
-	const keys = await redis.keys("active:*");
-	const activeUsers = keys.map(key => key.replace("active:", ""));
-	// console.log("activeUsers", activeUsers);
-	io.emit("activeUsers", activeUsers);
+	const allActiveUsers: string[] = [];
+
+	for await (const keys of redis.scanIterator({ MATCH: "active:*" })) {
+		allActiveUsers.push(...keys.map(key => key.replace("active:", "")));
+	}
+
+	io.emit("activeUsers", allActiveUsers);
 };
 
 let lastUpdateTime = 0;
@@ -59,9 +62,22 @@ io.on("connection", async socket => {
 			EX: 30 // Expiration in seconds
 		}); // set TTL to 30 seconds
 		// await updateActiveUsers();
-		// console.log("PONG!", socket.handshake.auth.userID);
+		// console.log("PONG!", userID);
 
 		await throttle();
+	});
+
+	socket.on("user-logout", async () => {
+		await redis.del(`active:${userID}`);
+		await updateActiveUsers();
+
+		// Optionally disconnect the socket
+		socket.disconnect(true);
+	});
+
+	socket.on("user-join", async () => {
+		await redis.set(`active:${userID}`, socket.id);
+		await updateActiveUsers();
 	});
 
 	socket.on("disconnect", async () => {
