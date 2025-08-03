@@ -37,7 +37,9 @@ interface Message {
 
 interface ChatStoreState {
 	showChatInfoPanel: boolean;
+	showChat: boolean;
 	setChatInfoPanelVisibility: (show: boolean) => void;
+	setChatVisibility: (show: boolean) => void;
 }
 
 interface ImageFile {
