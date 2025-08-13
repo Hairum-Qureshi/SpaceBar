@@ -35,6 +35,10 @@ const userSchema = new Schema(
 			type: [String],
 			ref: "Conversation",
 			default: []
+		},
+		pfpImageID: {
+			type: String,
+			default: ""
 		}
 	},
 	{
