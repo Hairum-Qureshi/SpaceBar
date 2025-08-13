@@ -4,6 +4,7 @@ import User from "../models/User";
 import path from "path";
 import fs from "fs";
 import imagekit from "../configs/imagekit-config";
+import axios from "axios";
 
 const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
 	try {
@@ -22,6 +23,45 @@ const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
 	}
 };
 
+function uploadImageToImageKit(
+	fileBuffer: Buffer,
+	fileName: string,
+	currUID: string,
+	res: Response,
+	FOLDER_PATH: string
+) {
+	imagekit
+		.upload({
+			file: fileBuffer,
+			fileName: `pfp-${fileName}`
+		})
+		.then(async response => {
+			const updatedUser: IUser = (await User.findByIdAndUpdate(
+				currUID,
+				{
+					profilePicture: response.url,
+					pfpImageID: response.fileId
+				},
+				{
+					new: true
+				}
+			)) as IUser;
+
+			fs.unlink(path.join(FOLDER_PATH, fileName), err => {
+				if (err) throw err;
+			});
+
+			res.status(200).json(updatedUser);
+		})
+		.catch(error => {
+			console.error("Image upload error:", error);
+
+			fs.unlink(path.join(FOLDER_PATH, fileName), err => {
+				if (err) throw err;
+			});
+		});
+}
+
 const uploadProfilePicture = async (
 	req: Request,
 	res: Response
@@ -31,58 +71,22 @@ const uploadProfilePicture = async (
 		const FOLDER_PATH = path.join(__dirname, "..", "./uploads");
 		const currUID: string = req.user._id;
 		const fileName = `${currUID}.${ext}`;
-		const fileBuffer = fs.readFileSync(`${FOLDER_PATH}/${fileName}`);
-		let profilePictureExists = false;
+		const fileBuffer: Buffer = fs.readFileSync(`${FOLDER_PATH}/${fileName}`);
 
-		imagekit.listFiles(
-			{
-				searchQuery: `name="pfp-${fileName}"`
-			},
-			(error, result) => {
-				if (error) console.log(error);
-				else {
-					profilePictureExists = (result && result.length > 0) || false;
+		const { pfpImageID }: IUser = (await User.findById(currUID)) as IUser;
+
+		imagekit.getFileMetadata(pfpImageID, (error, result) => {
+			if (error) {
+				console.log(error);
+			} else {
+				if (result) {
+					imagekit.deleteFile(pfpImageID, error => {
+						if (error) console.log(error);
+					});
 				}
 			}
-		);
-
-		if (profilePictureExists) {
-			imagekit.deleteFile(`pfp-${fileName}`, (error, result) => {
-				if (error) console.log(error);
-				else console.log(result);
-			});
-		}
-
-		imagekit
-			.upload({
-				file: fileBuffer,
-				fileName: `pfp-${fileName}`,
-				useUniqueFileName: false
-			})
-			.then(async response => {
-				const updatedUser: IUser = (await User.findByIdAndUpdate(
-					currUID,
-					{
-						profilePicture: response.url
-					},
-					{
-						new: true
-					}
-				)) as IUser;
-
-				fs.unlink(path.join(FOLDER_PATH, fileName), err => {
-					if (err) throw err;
-				});
-
-				res.status(200).json(updatedUser);
-			})
-			.catch(error => {
-				console.error("Image upload error:", error);
-
-				fs.unlink(path.join(FOLDER_PATH, fileName), err => {
-					if (err) throw err;
-				});
-			});
+			uploadImageToImageKit(fileBuffer, fileName, currUID, res, FOLDER_PATH);
+		});
 	} catch (error) {
 		console.error(
 			"Error in user.ts file, uploadProfilePicture function controller".red
