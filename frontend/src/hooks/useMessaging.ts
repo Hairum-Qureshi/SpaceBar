@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import type { ImageFile, Message } from "../interfaces";
-import { useCurrentUser } from "./useCurrentUser";
+import type { ImageFile } from "../interfaces";
 import { useLocation } from "react-router-dom";
+import { dataURLToFile } from "../utils/dataURLToFile";
 
 interface MessagingTools {
 	sendMessage: (
@@ -21,24 +21,13 @@ export default function useMessaging(): MessagingTools {
 	const location = useLocation();
 	const queryClient = useQueryClient();
 	const [conversationID, setConversationID] = useState("");
-	const { data: userData } = useCurrentUser();
 
 	useEffect(() => {
 		const convoID = location.pathname.split("/").pop();
 		if (convoID) setConversationID(convoID);
 	}, [location.pathname]);
 
-	async function dataURLToFile(dataURLToFile: string): Promise<File> {
-		const response = await axios.get(dataURLToFile, { responseType: "blob" });
-		const blob = response.data;
-		const originalFile = await fetch(dataURLToFile).then(res => res.blob());
-
-		return new File([blob], `message-${Date.now()}`, {
-			type: originalFile.type
-		});
-	}
-
-	const { mutate: postMessageMutate, isPending } = useMutation({
+	const { mutate: postMessageMutate } = useMutation({
 		mutationFn: async ({
 			message,
 			userID,
@@ -83,6 +72,9 @@ export default function useMessaging(): MessagingTools {
 			queryClient.invalidateQueries({
 				queryKey: ["messages", conversationID]
 			});
+			queryClient.invalidateQueries({
+				queryKey: ["conversationData", conversationID]
+			});
 		}
 	});
 
@@ -104,23 +96,23 @@ export default function useMessaging(): MessagingTools {
 				return;
 			}
 
-			queryClient.setQueryData(
-				["messages", conversationID],
-				(prevMessages: Message[] = []) => [
-					...prevMessages,
-					{
-						message,
-						sender: {
-							_id: userData._id,
-							username: userData.username,
-							profilePicture: userData.profilePicture
-						},
-						attachments: [],
-						conversationID,
-						createdAt: new Date()
-					}
-				]
-			);
+			// queryClient.setQueryData(
+			// 	["messages", conversationID],
+			// 	(prevMessages: Message[] = []) => [
+			// 		...prevMessages,
+			// 		{
+			// 			message,
+			// 			sender: {
+			// 				_id: userData._id,
+			// 				username: userData.username,
+			// 				profilePicture: userData.profilePicture
+			// 			},
+			// 			attachments: [],
+			// 			conversationID,
+			// 			createdAt: new Date()
+			// 		}
+			// 	]
+			// );
 
 			postMessageMutate({ message, userID, conversationID, images });
 			setMessage("");
