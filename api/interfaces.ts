@@ -33,6 +33,7 @@ interface IUser {
 	profilePicture: string;
 	isVerified: boolean;
 	conversations: IConversation[];
+	pfpImageID: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
