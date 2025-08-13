@@ -4,7 +4,6 @@ import User from "../models/User";
 import path from "path";
 import fs from "fs";
 import imagekit from "../configs/imagekit-config";
-import axios from "axios";
 
 const getCurrentUser = async (req: Request, res: Response): Promise<void> => {
 	try {
