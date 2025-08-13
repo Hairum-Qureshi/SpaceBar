@@ -6,12 +6,21 @@ import { MdContentCopy } from "react-icons/md";
 import moment from "moment";
 import { Bounce, toast, ToastContainer } from "react-toastify";
 import useAuth from "../hooks/useAuth";
+import ImageUploading, { type ImageListType } from "react-images-uploading";
+import { useState } from "react";
+import type { ImageFile } from "../interfaces";
+import useProfile from "../hooks/useProfile";
 
 export default function Settings() {
 	const { data: userData } = useCurrentUser();
+	const [profilePicture] = useState<ImageFile[]>([]);
+	const { uploadProfilePicture } = useProfile();
+
+	const onChange = (imageList: ImageListType) => {
+		uploadProfilePicture(imageList as ImageFile[]);
+	};
 
 	// TODO - style toast notification
-	// TODO - allow user to change pfp
 	// TODO - add toggle option to disable Notifications
 
 	const notify = () => toast("User ID copied!");
@@ -42,13 +51,24 @@ export default function Settings() {
 							<span className="ml-2">Go Back</span>
 						</Link>
 					</div>
-					{/* Header Section */}
 					<div className="flex items-center gap-6">
-						<img
-							src={userData?.profilePicture}
-							alt="User profile"
-							className="w-28 h-28 rounded-full object-cover border-2 border-purple-800"
-						/>
+						<ImageUploading
+							multiple
+							value={profilePicture}
+							onChange={onChange}
+							maxNumber={1}
+						>
+							{({ onImageUpload }) => (
+								<img
+									src={userData?.profilePicture}
+									alt="User profile"
+									className="w-28 h-28 rounded-full object-cover border-2 border-purple-800 hover:cursor-pointer hover:opacity-70"
+									onClick={() => {
+										onImageUpload();
+									}}
+								/>
+							)}
+						</ImageUploading>
 						<div>
 							<h1 className="text-3xl font-bold text-white">Settings</h1>
 							<p className="text-lg font-semibold text-gray-300">
@@ -57,7 +77,6 @@ export default function Settings() {
 							<p className="text-gray-400 text-sm">{userData?.email}</p>
 						</div>
 					</div>
-					{/* Details Section */}
 					<div>
 						<h2 className="text-2xl font-semibold text-white mb-2">Details</h2>
 						<p className="text-gray-300">
@@ -96,8 +115,6 @@ export default function Settings() {
 							</span>
 						</div>
 					</div>
-
-					{/* Actions Section */}
 					<div>
 						<button
 							className="bg-purple-700 hover:bg-purple-800 text-white font-semibold p-2 rounded-md w-36 mr-2 hover:cursor-pointer"
