@@ -16,15 +16,22 @@ const createConversation = async (
 		const currUID: string = req.user._id;
 
 		if (friendUID === currUID) {
-			res.status(400).json({ message: "You can't send a message to yourself" });
+			res.status(400).json({ error: "You can't send a message to yourself" });
 			return;
 		}
 
 		if (!friendUID) {
-			res.status(400).json({ message: "Friend UID is required" });
+			res.status(400).json({ error: "Friend UID is required" });
 		}
 
-		// first check if the users have a conversation with each other
+		// first check if the friendUID is valid
+		const friendUser = await User.findById(friendUID);
+		if (!friendUser) {
+			res.status(404).json({ error: "User not found" });
+			return;
+		}
+
+		// next check if the users have a conversation with each other
 		const existingConversation: IConversation | undefined =
 			(await Conversation.findOne({
 				users: { $all: [friendUID, currUID] }
