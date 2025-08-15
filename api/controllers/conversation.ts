@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Conversation from "../models/inbox/Conversation";
-import { IConversation, MinimalUserData } from "../interfaces";
+import { IConversation, IUser, MinimalUserData } from "../interfaces";
 import { v4 as uuidv4 } from "uuid";
 import User from "../models/User";
 import "../models/inbox/Message";
@@ -93,7 +93,11 @@ const getAllConversations = async (
 		const conversations =
 			userWithConversations?.conversations as IConversation[];
 
-		res.status(200).send(conversations);
+		const sortedConversations = conversations.sort((a, b) => {
+			return a.createdAt.getTime() - b.createdAt.getTime();
+		});
+
+		res.status(200).send(sortedConversations);
 	} catch (error) {
 		console.error(
 			"Error in conversation.ts file, getAllConversations function controller"
@@ -210,10 +214,62 @@ const getConversationData = async (
 	}
 };
 
+const deleteConversation = async (
+	req: Request,
+	res: Response
+): Promise<void> => {
+	try {
+		const { conversationID } = req.params;
+		const currUID: string = req.user._id;
+
+		// first check if the conversation exists
+		const conversation = await Conversation.findById(conversationID);
+
+		if (!conversation) {
+			res.status(404).json({ error: "Conversation not found" });
+			return;
+		}
+
+		// second check if the user is part of the conversation
+		if (!conversation.users.includes(currUID)) {
+			res.status(403).json({ error: "You are not part of this conversation" });
+			return;
+		}
+
+		// if they are, remove the conversation from their list of conversations (don't remove them from the list of users in the conversation)
+		await User.findByIdAndUpdate(currUID, {
+			$pull: {
+				conversations: conversationID
+			}
+		});
+
+		// check if all the users in the conversation have removed the conversation, if so, delete the conversation from the database
+		const usersWithConversation = await User.find({
+			conversations: conversationID
+		});
+		if (usersWithConversation.length === 0) {
+			await Conversation.findByIdAndDelete(conversationID);
+
+			// Also delete all messages associated with the conversation
+			await Message.deleteMany({ conversationID });
+		}
+
+		res.status(200).json({ message: "Conversation deleted successfully" });
+	} catch (error) {
+		console.error(
+			"Error in conversation.ts file, getConversationData function controller"
+				.red.bold,
+			error
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
 export {
 	createConversation,
 	getAllConversations,
 	getConversationByID,
 	getAllChatMessages,
-	getConversationData
+	getConversationData,
+	deleteConversation
 };
