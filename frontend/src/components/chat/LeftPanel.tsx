@@ -60,7 +60,7 @@ export default function LeftPanel() {
 					}
 				}}
 			>
-				<ModalForm />
+				<ModalForm onCloseModal={onCloseModal} />
 			</Modal>
 			<div>
 				<button
