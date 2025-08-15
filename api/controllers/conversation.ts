@@ -113,7 +113,7 @@ const getAllConversations = async (
 			userWithConversations?.conversations as IConversation[];
 
 		const sortedConversations = conversations.sort((a, b) => {
-			return a.createdAt.getTime() - b.createdAt.getTime();
+			return b.createdAt.getTime() - a.createdAt.getTime();
 		});
 
 		res.status(200).send(sortedConversations);
