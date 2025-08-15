@@ -22,6 +22,7 @@ const createConversation = async (
 
 		if (!friendUID) {
 			res.status(400).json({ error: "Friend UID is required" });
+			return;
 		}
 
 		// first check if the friendUID is valid
@@ -36,6 +37,24 @@ const createConversation = async (
 			(await Conversation.findOne({
 				users: { $all: [friendUID, currUID] }
 			})) as IConversation | undefined;
+
+		const userHasConversation = await User.findOne({
+			_id: currUID,
+			conversations: existingConversation?._id
+		});
+
+		// check if the conversation exists but the user removed the conversation ID from their list of conversations
+		if (existingConversation && !userHasConversation) {
+			// add the conversation ID back to the user's list of conversations
+			await User.findByIdAndUpdate(currUID, {
+				$addToSet: {
+					conversations: existingConversation._id
+				}
+			});
+
+			res.status(200).send(existingConversation);
+			return;
+		}
 
 		if (!existingConversation) {
 			// create the convo
