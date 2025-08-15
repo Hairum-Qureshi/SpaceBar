@@ -7,6 +7,8 @@ import imagekit from "../configs/imagekit-config";
 import fs from "fs";
 import path from "path";
 import { Types } from "mongoose";
+import User from "../models/User";
+import { IConversation } from "../interfaces";
 
 async function uploadImages(conversationID: string): Promise<string[]> {
 	const FOLDER_PATH = path.join(__dirname, "..", "./uploads");
@@ -50,6 +52,20 @@ const sendMessage = async (req: Request, res: Response): Promise<void> => {
 		const { message, userID, conversationID, imagesSent } = req.body;
 		const currUID = req.user._id;
 
+		const conversation: IConversation = (await Conversation.findById(
+			conversationID
+		)) as IConversation;
+
+		if (!conversation) {
+			res.status(404).json({ error: "Conversation not found" });
+			return;
+		}
+
+		if (!conversation.users.includes(currUID)) {
+			res.status(403).json({ error: "You are not part of this conversation" });
+			return;
+		}
+
 		if (imagesSent === "false" && !message) {
 			// yes, false has to be a string here
 			res.status(400).json({ error: "Message is required" });
@@ -90,6 +106,19 @@ const sendMessage = async (req: Request, res: Response): Promise<void> => {
 				new: true
 			}
 		);
+
+		// if the user removed the convo, make sure to re-add the convo to their list of convos
+		const userHasConversation = await User.findOne({
+			_id: userID,
+			conversations: conversationID
+		});
+		if (!userHasConversation) {
+			await User.findByIdAndUpdate(userID, {
+				$addToSet: {
+					conversations: conversationID
+				}
+			});
+		}
 
 		const socketID = await redis.get(`active:${userID}`);
 
