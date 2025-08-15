@@ -16,7 +16,7 @@ const createConversation = async (
 		const currUID: string = req.user._id;
 
 		if (friendUID === currUID) {
-			res.status(400).json({ error: "You can't send a message to yourself" });
+			res.status(400).json({ error: "You can't create a conversation to yourself" });
 			return;
 		}
 
@@ -78,9 +78,7 @@ const createConversation = async (
 			});
 
 			res.status(200).send(newConversation);
-		} else {
-			// the users already have a convo together
-		}
+		} 
 	} catch (error) {
 		console.error(
 			"Error in conversation.ts file, createConversation function controller"
