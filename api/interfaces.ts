@@ -11,7 +11,7 @@ interface IMessage {
 
 interface IConversation {
 	_id: string;
-	users: Types.ObjectId[];
+	users: string[];
 	isGroupChat: boolean;
 	groupName: string;
 	groupPhoto: string;
