@@ -2,6 +2,7 @@ import express from "express";
 import isAuthenticated from "../middleware/isAuthenticated";
 import {
 	createConversation,
+	deleteConversation,
 	getAllChatMessages,
 	getAllConversations,
 	getConversationByID,
@@ -17,5 +18,6 @@ router.get("/all", isAuthenticated, getAllConversations);
 router.get("/:conversationID", isAuthenticated, getConversationByID);
 router.get("/:conversationID/messages", isAuthenticated, getAllChatMessages);
 router.get("/:conversationID/data", isAuthenticated, getConversationData);
+router.delete("/:conversationID/remove", isAuthenticated, deleteConversation);
 
 export default router;
