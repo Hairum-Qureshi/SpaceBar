@@ -4,17 +4,70 @@ import { useCurrentUser } from "../../hooks/useCurrentUser";
 import Contact from "./Contact";
 import type { Conversation, User } from "../../interfaces";
 import { IoMdSettings } from "react-icons/io";
+import useChatStore from "../../stores/useChatStore";
+import "react-responsive-modal/styles.css";
+import { Modal } from "react-responsive-modal";
+import { useState } from "react";
+import ModalForm from "./ModalForm";
+import { Bounce, ToastContainer } from "react-toastify";
 
 export default function LeftPanel() {
-	const { conversations, createChatMutation } = useChat();
+	const { conversations } = useChat();
 	const { data: userData } = useCurrentUser();
+	const { showChat, setChatVisibility } = useChatStore();
+	const [open, setOpen] = useState(false);
+
+	const onOpenModal = () => setOpen(true);
+	const onCloseModal = () => setOpen(false);
+
+	// TODO - make modal 'X' button color white
 
 	return (
-		<div className="w-1/4 bg-zinc-950 p-3 min-h-screen max-h-screen flex flex-col">
+		<div
+			className={`
+        lg:h-screen lg:bg-zinc-950 lg:p-3 lg:flex lg:flex-col
+        ${showChat ? "block" : "hidden"}
+        sm:block
+      `}
+		>
+			<ToastContainer
+				position="top-right"
+				autoClose={2000}
+				hideProgressBar
+				newestOnTop={false}
+				closeOnClick
+				rtl={false}
+				pauseOnFocusLoss
+				draggable
+				theme="dark"
+				pauseOnHover={false}
+				transition={Bounce}
+			/>
+			<Modal
+				open={open}
+				onClose={onCloseModal}
+				classNames={{
+					modal:
+						"text-white p-8 rounded-xl border-2 border-purple-700 max-w-lg mx-auto shadow-lg w-1/2",
+					overlay: "bg-zinc-900 bg-opacity-70",
+					closeIcon: "text-purple-500 hover:text-purple-400"
+				}}
+				styles={{
+					modal: {
+						backgroundColor: "#1f1b2e",
+						marginTop: "8vh",
+						boxShadow: "0 8px 24px rgba(102, 51, 153, 0.5)"
+					}
+				}}
+			>
+				<ModalForm />
+			</Modal>
 			<div>
 				<button
 					className="bg-purple-950 hover:cursor-pointer p-2 text-purple-300 border border-purple-800 my-2 w-full rounded-md"
-					onClick={() => createChatMutation()}
+					onClick={() => {
+						onOpenModal();
+					}}
 				>
 					Add User
 				</button>
@@ -24,6 +77,7 @@ export default function LeftPanel() {
 					placeholder="Search User"
 				/>
 			</div>
+
 			<div className="flex-1 overflow-y-auto mt-2 space-y-2">
 				{conversations?.length > 0 ? (
 					conversations.flatMap((conversation: Conversation) =>
@@ -33,6 +87,8 @@ export default function LeftPanel() {
 								<Link
 									to={`/conversation/${conversation._id}`}
 									key={`${conversation._id}-${user._id}`}
+									onClick={() => setChatVisibility(true)}
+									className="hover:cursor-pointer"
 								>
 									<Contact
 										userID={user._id}
@@ -40,6 +96,7 @@ export default function LeftPanel() {
 										profilePicture={user.profilePicture}
 										latestMessage={conversation.latestMessage}
 										latestMessageTime={conversation.updatedAt}
+										conversationID={conversation._id}
 									/>
 								</Link>
 							))
@@ -51,6 +108,7 @@ export default function LeftPanel() {
 					</h3>
 				)}
 			</div>
+
 			<div className="h-10 w-full text-white text-center font-semibold mt-2 text-sm flex items-center">
 				<div className="flex items-center w-full">
 					<div className="w-12 h-12 rounded-full">
@@ -69,6 +127,7 @@ export default function LeftPanel() {
 						</h3>
 					</div>
 				</div>
+
 				<Link to="/settings">
 					<span className="text-xl ml-auto text-fuchsia-600 hover:cursor-pointer">
 						<IoMdSettings />
