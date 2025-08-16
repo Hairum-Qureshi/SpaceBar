@@ -5,6 +5,8 @@ import { v4 as uuidv4 } from "uuid";
 import User from "../models/User";
 import "../models/inbox/Message";
 import Message from "../models/inbox/Message";
+import imagekit from "../configs/imagekit-config";
+import { FileObject, FolderObject } from "imagekit/dist/libs/interfaces";
 
 const createConversation = async (
 	req: Request,
@@ -12,21 +14,23 @@ const createConversation = async (
 ): Promise<void> => {
 	try {
 		// TODO - will need to make it handle group chats
-		const { friendUID } = req.body;
+		const { username } = req.body;
 		const currUID: string = req.user._id;
 
-		if (friendUID === currUID) {
-			res.status(400).json({ error: "You can't create a conversation to yourself" });
+		if (username === req.user.username) {
+			res
+				.status(400)
+				.json({ error: "You can't create a conversation to yourself" });
 			return;
 		}
 
-		if (!friendUID) {
-			res.status(400).json({ error: "Friend UID is required" });
+		if (!username) {
+			res.status(400).json({ error: "Friend username is required" });
 			return;
 		}
 
 		// first check if the friendUID is valid
-		const friendUser = await User.findById(friendUID);
+		const friendUser: IUser = (await User.findOne({ username })) as IUser;
 		if (!friendUser) {
 			res.status(404).json({ error: "User not found" });
 			return;
@@ -35,7 +39,7 @@ const createConversation = async (
 		// next check if the users have a conversation with each other
 		const existingConversation: IConversation | undefined =
 			(await Conversation.findOne({
-				users: { $all: [friendUID, currUID] }
+				users: { $all: [friendUser._id, currUID] }
 			})) as IConversation | undefined;
 
 		const userHasConversation = await User.findOne({
@@ -60,7 +64,7 @@ const createConversation = async (
 			// create the convo
 			const newConversation = new Conversation({
 				_id: uuidv4().replace(/-/g, ""),
-				users: [currUID, friendUID]
+				users: [currUID, friendUser._id]
 			});
 
 			await newConversation.save();
@@ -71,14 +75,14 @@ const createConversation = async (
 				}
 			});
 
-			await User.findByIdAndUpdate(friendUID, {
+			await User.findByIdAndUpdate(friendUser._id, {
 				$addToSet: {
 					conversations: newConversation._id
 				}
 			});
 
 			res.status(200).send(newConversation);
-		} 
+		}
 	} catch (error) {
 		console.error(
 			"Error in conversation.ts file, createConversation function controller"
@@ -131,7 +135,6 @@ const getConversationByID = async (
 ): Promise<void> => {
 	try {
 		const { conversationID } = req.params;
-		const currUID: string = req.user._id;
 
 		const conversation: IConversation = (await Conversation.findById(
 			conversationID
@@ -198,13 +201,17 @@ const getConversationData = async (
 ): Promise<void> => {
 	try {
 		const { conversationID } = req.params;
-
-		const conversation: IConversation = (await Conversation.findById(
+		const conversation: IConversation | null = await Conversation.findById(
 			conversationID
 		).populate({
 			path: "users",
 			select: "_id username profilePicture"
-		})) as IConversation;
+		});
+
+		if (!conversation) {
+			res.status(404).json({ error: "Conversation not found" });
+			return;
+		}
 
 		const conversationImages = await Message.find({
 			conversationID,
@@ -269,6 +276,17 @@ const deleteConversation = async (
 
 			// Also delete all messages associated with the conversation
 			await Message.deleteMany({ conversationID });
+
+			// Handles deleting all images uploaded from the conversation
+			await imagekit
+				.listFiles({
+					tags: [`convo-${conversationID}`]
+				})
+				.then(result => {
+					result.forEach(async (file: FileObject | FolderObject) => {
+						await imagekit.deleteFile((file as FileObject).fileId);
+					});
+				});
 		}
 
 		res.status(200).json({ message: "Conversation deleted successfully" });
