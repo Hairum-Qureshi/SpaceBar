@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import useChat from "../../hooks/useChat";
+import ImageUploading, { type ImageListType } from "react-images-uploading";
 
 interface ModalFormProps {
 	onCloseModal: () => void;
@@ -8,16 +9,16 @@ interface ModalFormProps {
 
 export default function ModalForm({ onCloseModal }: ModalFormProps) {
 	const [isCreatingGC, setIsCreatingGC] = useState(false);
-	const [groupPhoto, setGroupPhoto] = useState<File | null>(null);
-	const [preview, setPreview] = useState<string | null>(null);
-	const [friendUID, setFriendUIID] = useState("");
+	const [groupChatPhoto, setGroupChatPhoto] = useState<ImageListType>([]);
+	const [groupChatName, setGroupChatName] = useState("");
+	const [groupChatMembers, setGroupChatMembers] = useState("");
+
+	const [friendUsername, setFriendUsername] = useState("");
 	const { createChatMutation } = useChat();
 
-	const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (!e.target.files || e.target.files.length === 0) return;
-		const file = e.target.files[0];
-		setGroupPhoto(file);
-		setPreview(URL.createObjectURL(file));
+	const onChange = (imageList: ImageListType) => {
+		console.log("imageList", imageList);
+		setGroupChatPhoto(imageList);
 	};
 
 	return (
@@ -42,7 +43,7 @@ export default function ModalForm({ onCloseModal }: ModalFormProps) {
 			</div>
 			{!isCreatingGC ? (
 				<div className="flex flex-col">
-					<p className="text-gray-300 mb-6 leading-relaxed">
+					{/* <p className="text-gray-300 mb-6 leading-relaxed">
 						To get your ID to share, visit your{" "}
 						<Link
 							to="/settings"
@@ -51,25 +52,25 @@ export default function ModalForm({ onCloseModal }: ModalFormProps) {
 							Settings page
 						</Link>
 						.
-					</p>
+					</p> */}
 					<label
 						htmlFor="userIdInput"
 						className="block text-white font-semibold mb-2"
 					>
-						Enter User ID
+						Enter Username
 					</label>
 					<input
 						id="userIdInput"
 						type="text"
-						placeholder="User ID"
+						placeholder="Username"
 						className="w-full p-2 rounded-md text-sm bg-zinc-800 border border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500 text-white mb-4"
-						value={friendUID}
-						onChange={e => setFriendUIID(e.target.value)}
+						value={friendUsername}
+						onChange={e => setFriendUsername(e.target.value)}
 					/>
 					<button
 						className="hover:cursor-pointer bg-pink-900 rounded-md p-2 ml-auto border border-pink-500"
 						onClick={() => {
-							createChatMutation(friendUID);
+							createChatMutation(friendUsername);
 							onCloseModal();
 						}}
 					>
@@ -85,29 +86,41 @@ export default function ModalForm({ onCloseModal }: ModalFormProps) {
 						type="text"
 						placeholder="Enter group name"
 						className="w-full p-2 rounded-md text-sm bg-zinc-800 border border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500 text-white mb-4"
+						value={groupChatName}
+						onChange={e => setGroupChatName(e.target.value)}
 					/>
 					<div className="mb-4">
 						<label className="block text-white font-semibold mb-2">
 							Group Photo
 						</label>
 						<div className="w-32 h-32 bg-zinc-800 border border-purple-700 rounded-lg flex items-center justify-center cursor-pointer overflow-hidden">
-							{preview ? (
-								<img
-									src={preview}
-									alt="Group Photo Preview"
-									className="w-full h-full object-cover"
-								/>
-							) : (
-								<span className="text-gray-400 text-sm text-center">
-									Click to upload
-								</span>
-							)}
-							<input
-								type="file"
-								accept="image/*"
-								onChange={handlePhotoChange}
-								className="absolute w-32 h-32 opacity-0 cursor-pointer"
-							/>
+							<ImageUploading
+								multiple={false} // you want only 1 image
+								value={groupChatPhoto}
+								onChange={onChange}
+								maxNumber={1}
+								dataURLKey="dataURL"
+							>
+								{({ onImageUpload, onImageRemoveAll }) => (
+									<div
+										className="w-full h-full"
+										style={{ cursor: "pointer" }}
+										onClick={() => {
+											onImageRemoveAll();
+											onImageUpload();
+										}}
+									>
+										<img
+											src={
+												groupChatPhoto?.[0]?.dataURL ||
+												"https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg"
+											}
+											alt="User profile"
+											className="w-full h-full object-cover"
+										/>
+									</div>
+								)}
+							</ImageUploading>
 						</div>
 					</div>
 					<label className="block text-white font-semibold mb-2">
@@ -117,6 +130,8 @@ export default function ModalForm({ onCloseModal }: ModalFormProps) {
 						type="text"
 						placeholder="Enter user IDs separated by commas"
 						className="w-full p-2 rounded-md text-sm bg-zinc-800 border border-purple-700 focus:outline-none focus:ring-1 focus:ring-purple-500 text-white mb-4"
+						value={groupChatMembers}
+						onChange={e => setGroupChatMembers(e.target.value)}
 					/>
 
 					<button className="hover:cursor-pointer bg-pink-900 border border-pink-500 rounded-md p-2 ml-auto">
