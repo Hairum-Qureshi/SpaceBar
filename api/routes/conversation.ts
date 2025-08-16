@@ -2,6 +2,7 @@ import express from "express";
 import isAuthenticated from "../middleware/isAuthenticated";
 import {
 	createConversation,
+	createGroupChat,
 	deleteConversation,
 	getAllChatMessages,
 	getAllConversations,
@@ -12,6 +13,7 @@ import {
 const router = express.Router();
 
 router.post("/create", isAuthenticated, createConversation);
+router.post("/create/group-chat", isAuthenticated, createGroupChat);
 router.get("/all", isAuthenticated, getAllConversations);
 
 // TODO - add middleware:
