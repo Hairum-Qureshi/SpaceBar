@@ -45,6 +45,10 @@ const conversationSchema = new Schema(
 		admins: {
 			type: [String],
 			ref: "User"
+		},
+		groupChatPhotoImageID: {
+			type: String,
+			default: ""
 		}
 	},
 	{
