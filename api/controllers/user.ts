@@ -31,8 +31,8 @@ const uploadProfilePicture = async (
 	try {
 		const currUID: string = req.user._id;
 
-		const { FOLDER_PATH, fileName, fileBuffer, pfpImageID } =
-			await getFileUploadData(req, currUID);
+		const { FOLDER_PATH, fileName, fileBuffer, imageID:pfpImageID } =
+			await getFileUploadData(req, currUID, "pfp");
 
 		imagekit.getFileMetadata(pfpImageID, (error, result) => {
 			if (error) {
