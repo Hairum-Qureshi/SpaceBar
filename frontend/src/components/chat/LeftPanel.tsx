@@ -96,6 +96,7 @@ export default function LeftPanel() {
 										latestMessage={conversation.latestMessage}
 										latestMessageTime={conversation.updatedAt}
 										conversationID={conversation._id}
+										isGroupChat={true}
 									/>
 								</Link>
 							);
@@ -117,6 +118,7 @@ export default function LeftPanel() {
 											latestMessage={conversation.latestMessage}
 											latestMessageTime={conversation.updatedAt}
 											conversationID={conversation._id}
+											isGroupChat={false}
 										/>
 									</Link>
 								));
