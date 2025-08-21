@@ -18,7 +18,7 @@ export function uploadImageToImageKit(
 	imagekit
 		.upload({
 			file: fileBuffer,
-			fileName: `${fileFor === "pfp" ? `pfp-${fileName}` : `gc-${fileName}`}`
+			fileName: `${fileFor === "pfp" ? `pfp-${fileName}` : `${fileName}`}`
 		})
 		.then(async response => {
 			if (fileFor === "pfp") {
@@ -37,13 +37,16 @@ export function uploadImageToImageKit(
 			}
 
 			if (fileFor === "groupChat" && conversationID) {
-				const updatedConversation: IConversation =
-					(await Conversation.findByIdAndUpdate(conversationID, {
+				await Conversation.findByIdAndUpdate(
+					conversationID,
+					{
 						groupPhoto: response.url,
 						groupChatPhotoImageID: response.fileId
-					})) as IConversation;
-
-				res.status(200).json(updatedConversation);
+					},
+					{
+						new: true
+					}
+				);
 			}
 
 			fs.unlink(path.join(FOLDER_PATH, fileName), err => {
