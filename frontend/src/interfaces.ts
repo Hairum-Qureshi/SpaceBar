@@ -38,8 +38,10 @@ interface Message {
 interface ChatStoreState {
 	showChatInfoPanel: boolean;
 	showChat: boolean;
+	showChatInfoPanelMobile: boolean;
 	setChatInfoPanelVisibility: (show: boolean) => void;
 	setChatVisibility: (show: boolean) => void;
+	setChatInfoPanelVisibilityMobile: (show: boolean) => void;
 }
 
 interface ImageFile {
@@ -54,11 +56,22 @@ interface MinimalUserData {
 	isVerified: boolean;
 }
 
+interface ContactProps {
+	userID: string | undefined;
+	profilePicture: string;
+	username: string;
+	latestMessage: string;
+	latestMessageTime: Date;
+	conversationID: string;
+	isGroupChat: boolean;
+}
+
 export type {
 	User,
 	Conversation,
 	Message,
 	ChatStoreState,
 	ImageFile,
-	MinimalUserData
+	MinimalUserData,
+	ContactProps
 };
