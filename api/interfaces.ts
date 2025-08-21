@@ -35,6 +35,7 @@ interface IUser {
 	isVerified: boolean;
 	conversations: IConversation[];
 	pfpImageID: string;
+	blockedUsers: string[];
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -51,7 +52,7 @@ interface FileUploadData {
 	fileName: string;
 	fileBuffer: Buffer;
 	imageID: string;
-	conversationID?:string;
+	conversationID?: string;
 }
 
 export { IUser, IConversation, IMessage, MinimalUserData, FileUploadData };
