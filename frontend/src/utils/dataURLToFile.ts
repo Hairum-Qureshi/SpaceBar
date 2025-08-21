@@ -2,6 +2,7 @@ import axios from "axios";
 
 export async function dataURLToFile(
 	dataURLToFile: string,
+	currUID?: string,
 	fileFor?: string
 ): Promise<File> {
 	const response = await axios.get(dataURLToFile, { responseType: "blob" });
@@ -11,8 +12,8 @@ export async function dataURLToFile(
 	return new File(
 		[blob],
 		`${
-			fileFor && fileFor === "groupChat"
-				? `gc-${Date.now()}`
+			fileFor && fileFor === "groupChat" && currUID
+				? `gc-${currUID}`
 				: `message-${Date.now()}`
 		}`,
 		{
