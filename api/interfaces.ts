@@ -50,7 +50,7 @@ interface FileUploadData {
 	FOLDER_PATH: string;
 	fileName: string;
 	fileBuffer: Buffer;
-	pfpImageID: string;
+	imageID: string;
 }
 
 export { IUser, IConversation, IMessage, MinimalUserData, FileUploadData };
