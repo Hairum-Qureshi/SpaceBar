@@ -80,27 +80,48 @@ export default function LeftPanel() {
 
 			<div className="flex-1 overflow-y-auto mt-2 space-y-2">
 				{conversations?.length > 0 ? (
-					conversations.flatMap((conversation: Conversation) =>
-						conversation.users
-							.filter((user: User) => user._id !== userData?._id)
-							.map((user: User) => (
+					conversations.map((conversation: Conversation) => {
+						if (conversation.isGroupChat) {
+							return (
 								<Link
 									to={`/conversation/${conversation._id}`}
-									key={`${conversation._id}-${user._id}`}
+									key={conversation._id}
 									onClick={() => setChatVisibility(true)}
 									className="hover:cursor-pointer"
 								>
 									<Contact
-										userID={user._id}
-										username={user.username}
-										profilePicture={user.profilePicture}
+										userID={conversation._id}
+										username={conversation.groupName!}
+										profilePicture={conversation.groupPhoto!}
 										latestMessage={conversation.latestMessage}
 										latestMessageTime={conversation.updatedAt}
 										conversationID={conversation._id}
 									/>
 								</Link>
-							))
-					)
+							);
+						} else {
+							// Render 1-on-1 chat contact(s)
+							return conversation.users
+								.filter((user: User) => user._id !== userData?._id) // exclude yourself
+								.map((user: User) => (
+									<Link
+										to={`/conversation/${conversation._id}`}
+										key={`${conversation._id}-${user._id}`}
+										onClick={() => setChatVisibility(true)}
+										className="hover:cursor-pointer"
+									>
+										<Contact
+											userID={user._id}
+											username={user.username}
+											profilePicture={user.profilePicture}
+											latestMessage={conversation.latestMessage}
+											latestMessageTime={conversation.updatedAt}
+											conversationID={conversation._id}
+										/>
+									</Link>
+								));
+						}
+					})
 				) : (
 					<h3 className="my-10 text-slate-500 text-center">
 						You currently don't have any conversations with anyone. Click the
