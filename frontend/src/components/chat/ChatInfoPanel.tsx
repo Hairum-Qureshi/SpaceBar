@@ -18,6 +18,8 @@ export default function ChatInfoPanel() {
 		}
 	};
 
+	// TODO - for group chats, allow admins to add/remove users and update the group photo as well
+
 	return (
 		<div className="w-full text-white h-screen ml-auto overflow-hidden bg-zinc-950 border-l-2 border-l-purple-800 flex flex-col">
 			<div className="flex-shrink-0">
@@ -25,35 +27,34 @@ export default function ChatInfoPanel() {
 					Members
 				</h3>
 				<div className="max-h-48 overflow-y-auto">
-					{conversationData?.conversationMembers.map(
-						(user: MinimalUserData) => {
-							return (
+					<div className="max-h-48 overflow-y-auto">
+						{conversationData?.conversationMembers.map(
+							(user: MinimalUserData) => (
 								<div key={user._id} className="w-full p-2 flex items-center">
-									<div className="w-8 h-8 rounded-full">
+									{/* Avatar */}
+									<div className="shrink-0 size-8 rounded-full overflow-hidden border border-purple-700">
 										<img
 											src={user.profilePicture}
 											alt={`User ${user.username} Profile Picture`}
-											className="w-8 h-8 rounded-full object-cover border border-purple-700"
+											className="w-full h-full object-cover"
 										/>
 									</div>
+
 									<div className="ml-3 flex justify-between w-full">
 										<span>@{user.username}</span>
-										{conversation.isGroupChat && (
-											<>
-												{(activeUsers as unknown as string[]).includes(
-													user._id
-												) ? (
-													<span className="text-green-500">Online</span>
-												) : (
-													<span className="text-red-500">Offline</span>
-												)}
-											</>
-										)}
+										{conversation.isGroupChat &&
+											((activeUsers as unknown as string[]).includes(
+												user._id
+											) ? (
+												<span className="text-green-500">Online</span>
+											) : (
+												<span className="text-red-500">Offline</span>
+											))}
 									</div>
 								</div>
-							);
-						}
-					)}
+							)
+						)}
+					</div>
 				</div>
 			</div>
 			<div className="flex-grow overflow-y-auto px-2 py-2">
