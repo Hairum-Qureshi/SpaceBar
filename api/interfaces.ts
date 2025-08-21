@@ -21,6 +21,7 @@ interface IConversation {
 	latestMessage: string;
 	messages: IMessage[];
 	admins: Types.ObjectId[];
+	groupChatPhotoImageID: string;
 	createdAt: Date;
 	updatedAt: Date;
 }
@@ -45,4 +46,11 @@ interface MinimalUserData {
 	isVerified: boolean;
 }
 
-export { IUser, IConversation, IMessage, MinimalUserData };
+interface FileUploadData {
+	FOLDER_PATH: string;
+	fileName: string;
+	fileBuffer: Buffer;
+	pfpImageID: string;
+}
+
+export { IUser, IConversation, IMessage, MinimalUserData, FileUploadData };
