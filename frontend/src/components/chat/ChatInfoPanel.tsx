@@ -2,9 +2,11 @@ import useChat from "../../hooks/useChat";
 import type { MinimalUserData } from "../../interfaces";
 import { FaDownload } from "react-icons/fa6";
 import { saveAs } from "file-saver";
+import useSocketStore from "../../stores/useSocketStore";
 
 export default function ChatInfoPanel() {
-	const { conversationData } = useChat();
+	const { conversationData, conversation } = useChat();
+	const activeUsers = useSocketStore(state => state.activeUsers);
 
 	const handleDownload = async (imageURL: string) => {
 		try {
@@ -17,7 +19,7 @@ export default function ChatInfoPanel() {
 	};
 
 	return (
-		<div className="w-1/4 text-white h-screen ml-auto overflow-hidden bg-zinc-950 border-l-2 border-l-purple-800 flex flex-col">
+		<div className="w-full text-white h-screen ml-auto overflow-hidden bg-zinc-950 border-l-2 border-l-purple-800 flex flex-col">
 			<div className="flex-shrink-0">
 				<h3 className="text-slate-300 font-semibold text-xl text-center mt-5">
 					Members
@@ -34,7 +36,20 @@ export default function ChatInfoPanel() {
 											className="w-8 h-8 rounded-full object-cover border border-purple-700"
 										/>
 									</div>
-									<div className="ml-3">@{user.username}</div>
+									<div className="ml-3 flex justify-between w-full">
+										<span>@{user.username}</span>
+										{conversation.isGroupChat && (
+											<>
+												{(activeUsers as unknown as string[]).includes(
+													user._id
+												) ? (
+													<span className="text-green-500">Online</span>
+												) : (
+													<span className="text-red-500">Offline</span>
+												)}
+											</>
+										)}
+									</div>
 								</div>
 							);
 						}
