@@ -51,6 +51,7 @@ interface FileUploadData {
 	fileName: string;
 	fileBuffer: Buffer;
 	imageID: string;
+	conversationID?:string;
 }
 
 export { IUser, IConversation, IMessage, MinimalUserData, FileUploadData };
