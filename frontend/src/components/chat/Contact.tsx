@@ -1,17 +1,8 @@
 import activeStatus from "../../assets/green-live-pulse.gif";
 import useChat from "../../hooks/useChat";
+import type { ContactProps } from "../../interfaces";
 import useSocketStore from "../../stores/useSocketStore";
 import { FaTrash } from "react-icons/fa";
-
-interface ContactProps {
-	userID: string | undefined;
-	profilePicture: string;
-	username: string;
-	latestMessage: string;
-	latestMessageTime: Date;
-	conversationID: string;
-	isGroupChat: boolean;
-}
 
 // TODO - make sure to truncate the latest message
 // TODO - have Moment.js format the latestMessageTime so it's in the form of: hh:mm AM/PM
