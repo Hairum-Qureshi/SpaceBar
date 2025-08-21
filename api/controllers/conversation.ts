@@ -7,6 +7,8 @@ import "../models/inbox/Message";
 import Message from "../models/inbox/Message";
 import imagekit from "../configs/imagekit-config";
 import { FileObject, FolderObject } from "imagekit/dist/libs/interfaces";
+import { getFileUploadData } from "../utils/file-related/getFileUploadData";
+import { uploadImageToImageKit } from "../utils/file-related/uploadImageToImageKit";
 
 const createConversation = async (
 	req: Request,
@@ -300,11 +302,149 @@ const deleteConversation = async (
 	}
 };
 
+const createGroupChat = async (req: Request, res: Response): Promise<void> => {
+	try {
+		const { groupChatName, members } = req.body;
+		const currUID: string = req.user._id;
+
+		// TODO - think about creating a separate helper function *or* using the existing helper function when it comes to deleting all the images from Cloudinary (including the group chat photo) when the group chat gets deleted from the database
+
+		if (typeof members !== "string") {
+			res.status(400).json({ error: "Members must be a string" });
+			return;
+		}
+
+		if (!groupChatName?.trim() || !members?.trim()) {
+			res.status(400).json({
+				error: "Please provide a group chat name and at least two members"
+			});
+			return;
+		}
+
+		if (!members.includes(",")) {
+			res.status(400).json({
+				error: "Please make sure you're using a comma separated list"
+			});
+			return;
+		}
+
+		if (members.includes(req.user.username)) {
+			res.status(400).json({
+				error: "You cannot add yourself to a group chat"
+			});
+			return;
+		}
+
+		const memberList = members
+			.split(",")
+			.map(m => m.trim())
+			.filter(Boolean); // remove empty strings
+
+		if (memberList.length < 2) {
+			res.status(400).json({
+				error: "Please provide at least two members to create a group chat"
+			});
+			return;
+		}
+
+		if (memberList.length > 10) {
+			res.status(400).json({
+				error: "Group chats can only have up to 10 members"
+			});
+			return;
+		}
+
+		if (members.split(", ").length < 2 || members.split(",").length < 2) {
+			res.status(400).json({
+				error: "Group chats must have at least 2 other people"
+			});
+			return;
+		}
+
+		// create the group chat
+		// first verify if all the users within members exist
+		const foundUsers: IUser[] = (await User.find({
+			username: { $in: memberList }
+		}).lean()) as IUser[];
+
+		let foundUsersMap: Map<string, IUser> = new Map();
+		for (const user of foundUsers) {
+			foundUsersMap.set(user.username, user);
+		}
+
+		if (foundUsersMap.size !== memberList.length) {
+			// not all users were found. Find the users that weren't
+			const missingUsers: string[] = [];
+			for (const username of memberList) {
+				if (!foundUsersMap.has(username)) missingUsers.push(`@${username}`);
+			}
+
+			res.status(400).json({
+				message: `The following user(s) could not be found: ${missingUsers.join(
+					", "
+				)}`
+			});
+
+			return;
+		}
+
+		const uids: string[] = [currUID];
+		for (const username of memberList) {
+			const uid = foundUsersMap.get(username)?._id;
+			if (uid) uids.push(uid);
+		}
+
+		const newConversation = new Conversation({
+			_id: uuidv4().replace(/-/g, ""),
+			users: uids,
+			isGroupChat: true,
+			groupName: groupChatName,
+			admins: [currUID]
+		});
+
+		newConversation.save();
+
+		const { FOLDER_PATH, fileName, fileBuffer, imageID } =
+			await getFileUploadData(req, currUID, "groupChat");
+
+		imagekit.getFileMetadata(imageID, (error, result) => {
+			if (error) {
+				console.log(error);
+			} else {
+				if (result) {
+					imagekit.deleteFile(imageID, error => {
+						if (error) console.log(error);
+					});
+				}
+			}
+			uploadImageToImageKit(
+				fileBuffer,
+				fileName,
+				currUID,
+				res,
+				FOLDER_PATH,
+				"groupChat",
+				newConversation._id
+			);
+
+			res.status(200).send(newConversation);
+		});
+	} catch (error) {
+		console.error(
+			"Error in conversation.ts file, createGroupChat function controller".red
+				.bold,
+			error
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
 export {
 	createConversation,
 	getAllConversations,
 	getConversationByID,
 	getAllChatMessages,
 	getConversationData,
-	deleteConversation
+	deleteConversation,
+	createGroupChat
 };
