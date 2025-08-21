@@ -1,16 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import type {
-	Conversation,
-	ImageFile,
-	Message,
-	MinimalUserData
-} from "../interfaces";
+import type { Conversation, Message, MinimalUserData } from "../interfaces";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import useSocketStore from "../stores/useSocketStore";
 import { toast } from "react-toastify";
 import { useCurrentUser } from "./useCurrentUser";
+import type { ImageListType } from "react-images-uploading";
+import { dataURLToFile } from "../utils/dataURLToFile";
 
 interface ChatTools {
 	conversations: Conversation[];
@@ -24,6 +21,11 @@ interface ChatTools {
 		conversationMembers: MinimalUserData[];
 	};
 	deleteConversation: (conversationID: string) => void;
+	createGroupChat: (
+		groupChatName: string,
+		groupChatPhoto: ImageListType,
+		members: string
+	) => void;
 }
 
 export default function useChat(): ChatTools {
@@ -226,9 +228,66 @@ export default function useChat(): ChatTools {
 		deleteConversationMutation({ conversationID });
 	}
 
+	const { mutate: createGroupChatMutation } = useMutation({
+		mutationFn: async ({
+			groupChatName,
+			groupChatPhoto,
+			members
+		}: {
+			groupChatName: string;
+			groupChatPhoto: ImageListType;
+			members: string;
+		}) => {
+			try {
+				const formData = new FormData();
+
+				const res: File = await dataURLToFile(
+					(groupChatPhoto as ImageListType)[0].dataURL!,
+					userData._id,
+					"groupChat"
+				);
+
+				formData.append("groupChatPhoto", res);
+				formData.append("groupChatName", groupChatName);
+				formData.append("members", members);
+
+				const response = await axios.post(
+					`${
+						import.meta.env.VITE_BACKEND_BASE_URL
+					}/api/conversation/create/group-chat`,
+					formData,
+					{
+						withCredentials: true
+					}
+				);
+
+				return response.data;
+			} catch (error) {
+				console.error("Error sending message:", error);
+				if (axios.isAxiosError(error)) {
+					toast(error.response?.data.error, {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				} else {
+					toast("An unknown error occurred", {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				}
+				throw error;
+			}
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["conversations"] });
+		}
+	});
+
 	function createGroupChat(
 		groupChatName: string,
-		groupChatPhoto: ImageFile[],
+		groupChatPhoto: ImageListType,
 		members: string
 	) {
 		if (!groupChatName || !groupChatPhoto.length || !members) {
@@ -240,10 +299,42 @@ export default function useChat(): ChatTools {
 			return;
 		}
 
+		if (!members.includes(",")) {
+			toast("Please make sure you're using a comma separated list", {
+				autoClose: 600,
+				hideProgressBar: true,
+				type: "error"
+			});
+			return;
+		}
+
 		// TODO - will need to add a character limit for group chat name
 
-		if (members.includes(userData?._id)) {
+		if (members.includes(userData?.username)) {
 			toast("You cannot add yourself to a group chat", {
+				autoClose: 600,
+				hideProgressBar: true,
+				type: "error"
+			});
+			return;
+		}
+
+		const memberList = members
+			.split(",")
+			.map(m => m.trim())
+			.filter(Boolean); // remove empty strings
+
+		if (memberList.length < 2) {
+			toast("Please add at least 2 members to the group chat", {
+				autoClose: 600,
+				hideProgressBar: true,
+				type: "error"
+			});
+			return;
+		}
+
+		if (memberList.length > 10) {
+			toast("Please add no more than 10 members to the group chat", {
 				autoClose: 600,
 				hideProgressBar: true,
 				type: "error"
@@ -253,6 +344,11 @@ export default function useChat(): ChatTools {
 
 		if (members.split(", ").length >= 2 || members.split(",").length >= 2) {
 			// create the group chat
+			createGroupChatMutation({
+				groupChatName,
+				groupChatPhoto,
+				members
+			});
 		}
 	}
 
@@ -262,6 +358,7 @@ export default function useChat(): ChatTools {
 		conversation,
 		conversationMessages,
 		conversationData,
-		deleteConversation
+		deleteConversation,
+		createGroupChat
 	};
 }
