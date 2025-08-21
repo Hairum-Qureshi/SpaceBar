@@ -404,6 +404,11 @@ const createGroupChat = async (req: Request, res: Response): Promise<void> => {
 
 		newConversation.save();
 
+		await User.updateMany(
+			{ _id: { $in: uids } },
+			{ $addToSet: { conversations: newConversation._id } }
+		);
+
 		const { FOLDER_PATH, fileName, fileBuffer, imageID } =
 			await getFileUploadData(req, currUID, "groupChat");
 
