@@ -39,6 +39,10 @@ const userSchema = new Schema(
 		pfpImageID: {
 			type: String,
 			default: ""
+		},
+		blockedUsers: {
+			type: [String],
+			ref: "User"
 		}
 	},
 	{
