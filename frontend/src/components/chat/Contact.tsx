@@ -52,29 +52,35 @@ export default function Contact({
 						<div className="flex flex-col items-center justify-start gap-1">
 							{/* Kebab at the top */}
 
-							{/* Status below */}
-							{activeUsers && userID && activeUsers.includes(userID) ? (
-								<>
-									<FaTrash
-										className="text-red-700 font-bold text-sm mb-2 hover:cursor-pointer hover:text-red-500"
-										onClick={() => deleteConversation(conversationID)}
-									/>
-									<div className="w-4 h-4 rounded-full">
-										<img
-											src={activeStatus}
-											alt="Activity bubble"
-											className="w-4 h-4 rounded-full object-cover"
+							{!isGroupChat &&
+								(activeUsers && userID && activeUsers.includes(userID) ? (
+									<>
+										<FaTrash
+											className="text-red-700 font-bold text-sm mb-2 hover:cursor-pointer hover:text-red-500"
+											onClick={() => deleteConversation(conversationID)}
 										/>
-									</div>
-								</>
-							) : (
-								<>
-									<FaTrash
-										className="text-red-700 font-bold text-sm mb-2 hover:cursor-pointer hover:text-red-500"
-										onClick={() => deleteConversation(conversationID)}
-									/>
-									<div className="w-2 h-2 rounded-full bg-red-600" />
-								</>
+										<div className="w-4 h-4 rounded-full">
+											<img
+												src={activeStatus}
+												alt="Activity bubble"
+												className="w-4 h-4 rounded-full object-cover"
+											/>
+										</div>
+									</>
+								) : (
+									<>
+										<FaTrash
+											className="text-red-700 font-bold text-sm mb-2 hover:cursor-pointer hover:text-red-500"
+											onClick={() => deleteConversation(conversationID)}
+										/>
+										<div className="w-2 h-2 rounded-full bg-red-600" />
+									</>
+								))}
+							{isGroupChat && (
+								<FaTrash
+									className="text-red-700 font-bold text-sm mb-2 hover:cursor-pointer hover:text-red-500"
+									onClick={() => deleteConversation(conversationID)}
+								/>
 							)}
 						</div>
 					</div>
