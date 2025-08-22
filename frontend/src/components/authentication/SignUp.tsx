@@ -70,7 +70,13 @@ export default function SignUp() {
 									</span>
 									&nbsp; Google
 								</button>
-								<button className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 ml-1 hover:cursor-pointer">
+								<button
+									className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 ml-1 hover:cursor-pointer"
+									onClick={e => {
+										e.preventDefault();
+										alert("Coming soon!");
+									}}
+								>
 									<span className="text-xl">
 										<FaApple />
 									</span>
