@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
 			file.fieldname === "profilePicture"
 				? `${req.user._id}.${ext}`
 				: file.fieldname === "groupChatPhoto"
-				? `gc-${req.body.conversationID}-${file.originalname}.${ext}`
+				? `${file.originalname}.${ext}`
 				: `${req.body.conversationID}-${new Date().getTime()}-${
 						file.originalname
 				  }.${ext}`
