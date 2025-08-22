@@ -9,6 +9,7 @@ api/logs/
 api/dist/
 api/build/
 api/coverage/
+api/configs/firebase/
 
 ###################
 # Frontend (React)
