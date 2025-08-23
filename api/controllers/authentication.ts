@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import User from "../models/User";
 import bcrypt from "bcrypt";
 import generateAndSetCookie from "../utils/generateAndSetCookie";
-import { IUser } from "../interfaces";
 import { v4 as uuidv4 } from "uuid";
+import admin from "../configs/firebase/firebase-config";
+import crypto from "crypto";
 
 const signUp = async (req: Request, res: Response): Promise<void> => {
 	try {
@@ -24,6 +25,13 @@ const signUp = async (req: Request, res: Response): Promise<void> => {
 		const existingEmail = await User.findOne({ email });
 		if (existingEmail) {
 			res.status(400).json({ error: "Email already taken" });
+			return;
+		}
+
+		if (email.endsWith("@gmail.com")) {
+			res.status(400).json({
+				error: "Please sign in with Google instead of using email and password"
+			});
 			return;
 		}
 
@@ -136,4 +144,60 @@ const signOut = async (req: Request, res: Response) => {
 	}
 };
 
-export { signUp, signIn, signOut };
+const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
+	try {
+		const tokenHeader = req.headers.authorization;
+
+		if (!tokenHeader) {
+			res.status(400).send("Invalid token or no token found");
+			return;
+		}
+
+		if (!tokenHeader) {
+			res.status(400).send("Invalid token or no token found");
+			return;
+		}
+		const decodedToken = await admin
+			.auth()
+			.verifyIdToken(tokenHeader.replace("Bearer ", ""));
+
+		// Check if the user already exists in the database
+		let user = await User.findOne({ email: decodedToken.email });
+
+		if (user) {
+			generateAndSetCookie(user._id, res);
+			res.status(200).json({ userData: user });
+			return;
+		}
+
+		// generate a random password and hash it
+		const salt = await bcrypt.genSalt(10);
+		const hashedPassword = await bcrypt.hash(
+			crypto.randomBytes(40).toString("base64"),
+			salt
+		);
+
+		user = new User({
+			_id: decodedToken.uid,
+			email: decodedToken.email,
+			username: decodedToken.name.replaceAll(" ", "-").toLowerCase(),
+			profilePicture: decodedToken.picture,
+			password: hashedPassword
+		});
+
+		await user.save();
+
+		generateAndSetCookie(user._id, res);
+
+		res.status(200).json({ userData: user });
+	} catch (error) {
+		console.error(
+			"Error in authentication.ts file, signInWithGoogle function controller"
+				.red.bold,
+			error
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export { signUp, signIn, signOut, signInWithGoogle };
