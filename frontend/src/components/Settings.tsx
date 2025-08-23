@@ -62,6 +62,7 @@ export default function Settings() {
 								<img
 									src={userData?.profilePicture}
 									alt="User profile"
+									referrerPolicy="no-referrer"
 									className="w-28 h-28 rounded-full object-cover border-2 border-purple-800 hover:cursor-pointer hover:opacity-70"
 									onClick={() => {
 										onImageUpload();
