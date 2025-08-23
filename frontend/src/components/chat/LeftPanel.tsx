@@ -138,6 +138,7 @@ export default function LeftPanel() {
 						<img
 							src={userData?.profilePicture}
 							alt="User profile picture"
+							referrerPolicy="no-referrer"
 							className="border border-purple-600 w-12 h-12 rounded-full object-cover"
 						/>
 					</div>
