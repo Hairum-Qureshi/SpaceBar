@@ -10,10 +10,20 @@ import {
 	getConversationData
 } from "../controllers/conversation";
 
+import multer from "multer";
+import storage from "../multer-config";
+
 const router = express.Router();
 
+const upload = multer({ storage });
+
 router.post("/create", isAuthenticated, createConversation);
-router.post("/create/group-chat", isAuthenticated, createGroupChat);
+router.post(
+	"/create/group-chat",
+	upload.single("groupChatPhoto"),
+	isAuthenticated,
+	createGroupChat
+);
 router.get("/all", isAuthenticated, getAllConversations);
 
 // TODO - add middleware:
