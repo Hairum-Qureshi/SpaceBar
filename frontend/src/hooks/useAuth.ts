@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import useSocketStore from "../stores/useSocketStore";
 import type { User } from "../interfaces";
 import { useState } from "react";
+import { signInWithPopup } from "@firebase/auth";
+import { auth, googleProvider } from "../config/firebase";
 
 interface FormErrors {
 	usernameFieldError?: boolean;
@@ -31,6 +33,7 @@ interface AuthTools {
 	passwordLengthValid: boolean;
 	formErrors: FormErrors;
 	passwordsMatch: boolean;
+	handleGoogleSignIn: () => Promise<void>;
 }
 
 export default function useAuth(): AuthTools {
@@ -94,6 +97,15 @@ export default function useAuth(): AuthTools {
 						});
 					}
 					if (error.response?.data.error === "Email already taken") {
+						setFormErrors({
+							...formErrors,
+							emailFieldError: true
+						});
+					}
+					if (
+						error.response?.data.error ===
+						"Please sign in with Google instead of using email and password"
+					) {
 						setFormErrors({
 							...formErrors,
 							emailFieldError: true
@@ -390,6 +402,63 @@ export default function useAuth(): AuthTools {
 		signOutMutate();
 	}
 
+	const { mutate: signInWithGoogleMutate } = useMutation({
+		mutationFn: async ({ token }: { token: string }) => {
+			try {
+				const response = await axios.post(
+					`${import.meta.env.VITE_BACKEND_BASE_URL}/api/auth/google/sign-in`,
+					{},
+					{
+						headers: {
+							Authorization: `Bearer ${token}`
+						},
+						withCredentials: true
+					}
+				);
+				return response;
+			} catch (error) {
+				if (axios.isAxiosError(error)) {
+					toast(error.response?.data.error, {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				} else {
+					toast("An unknown error occurred", {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				}
+
+				throw error;
+			}
+		},
+		onSuccess: () => {
+			const userData: User | undefined = queryClient.getQueryData([
+				"currentUser"
+			]);
+
+			if (userData && userData?._id) {
+				connectSocket(userData?._id);
+			}
+
+			socket?.emit("user-join");
+			navigate("/");
+		}
+	});
+
+	const handleGoogleSignIn = async () => {
+		try {
+			const result = await signInWithPopup(auth, googleProvider);
+			const token = await result.user.getIdToken();
+
+			signInWithGoogleMutate({ token });
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	return {
 		signUp,
 		signIn,
@@ -401,6 +470,7 @@ export default function useAuth(): AuthTools {
 		passContainsNumsAndSymbols,
 		passwordLengthValid,
 		formErrors,
-		passwordsMatch
+		passwordsMatch,
+		handleGoogleSignIn
 	};
 }
