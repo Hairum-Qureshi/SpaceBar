@@ -9,7 +9,6 @@ import {
 	getConversationByID,
 	getConversationData
 } from "../controllers/conversation";
-
 import multer from "multer";
 import storage from "../multer-config";
 
@@ -20,8 +19,8 @@ const upload = multer({ storage });
 router.post("/create", isAuthenticated, createConversation);
 router.post(
 	"/create/group-chat",
-	upload.single("groupChatPhoto"),
 	isAuthenticated,
+	upload.single("groupChatPhoto"),
 	createGroupChat
 );
 router.get("/all", isAuthenticated, getAllConversations);
