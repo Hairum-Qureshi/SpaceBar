@@ -22,6 +22,17 @@ export default function ChatInfoPanel() {
 
 	return (
 		<div className="w-full text-white h-screen ml-auto overflow-hidden bg-zinc-950 border-l-2 border-l-purple-800 flex flex-col">
+			{conversation?.isGroupChat && (
+				<div className="w-full flex items-center justify-center mt-8 mb-2">
+					<div className="border border-purple-700 w-40 h-40 rounded-md">
+						<img
+							src={conversation.groupPhoto}
+							alt="Group chat photo"
+							className="w-full h-full object-cover rounded-md"
+						/>
+					</div>
+				</div>
+			)}
 			<div className="flex-shrink-0">
 				<h3 className="text-slate-300 font-semibold text-xl text-center mt-5">
 					Members
@@ -89,11 +100,13 @@ export default function ChatInfoPanel() {
 					)}
 				</div>
 			</div>
-			<div className="flex-shrink-0 p-4 border-t border-white">
-				<button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded hover:cursor-pointer">
-					Block User
-				</button>
-			</div>
+			{!conversation.isGroupChat && (
+				<div className="flex-shrink-0 p-4 border-t border-white">
+					<button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded hover:cursor-pointer">
+						Block User
+					</button>
+				</div>
+			)}
 		</div>
 	);
 }
