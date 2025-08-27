@@ -11,23 +11,48 @@ export async function getFileUploadData(
 	imageFor: string,
 	conversationID?: string
 ): Promise<FileUploadData> {
-	const ext: string = req.file?.mimetype.split("/").pop()!;
-	const FOLDER_PATH = path.join(__dirname, "../../uploads");
-	const fileName = `${
-		imageFor === "pfp" ? `${currUID}.${ext}` : `gc-${currUID}.${ext}`
-	}`;
-	const fileBuffer: Buffer = fs.readFileSync(`${FOLDER_PATH}/${fileName}`);
+	try {
+		const ext: string = req.file?.mimetype.split("/").pop()!;
+		const FOLDER_PATH = path.join(__dirname, "../../uploads");
+		const fileName = `${
+			imageFor === "pfp" ? `${currUID}.${ext}` : `gc-${currUID}.${ext}`
+		}`;
+		let fileBuffer: Buffer;
 
-	let imageID = "";
-	if (imageFor === "pfp") {
-		const user: IUser = (await User.findById(currUID)) as IUser;
-		imageID = user?.pfpImageID;
-	} else {
-		const conversation: IConversation = (await Conversation.findById(
-			conversationID
-		)) as IConversation;
-		imageID = conversation?.groupChatPhotoImageID;
+		let imageID = "";
+		if (imageFor === "pfp") {
+			console.log("RAN 1".yellow);
+			const user: IUser = (await User.findById(currUID)) as IUser;
+			imageID = user?.pfpImageID;
+			fileBuffer = fs.readFileSync(`${FOLDER_PATH}/${fileName}`);
+			return { FOLDER_PATH, fileName, fileBuffer, imageID };
+		} else {
+			const files = fs.readdirSync(FOLDER_PATH);
+
+			const match = files.find(rawFile => {
+				return rawFile.includes(`gc-${currUID}`);
+			});
+
+			if (!match) {
+				throw new Error("No matching group chat image found");
+			}
+
+			// use the actual matched filename
+			fileBuffer = fs.readFileSync(path.join(FOLDER_PATH, match));
+
+			const conversation: IConversation = (await Conversation.findById(
+				conversationID
+			)) as IConversation;
+
+			imageID = conversation?.groupChatPhotoImageID;
+
+			return { FOLDER_PATH, fileName: match, fileBuffer, imageID };
+		}
+	} catch (err) {
+		console.error(
+			"<getFileUploadData> There was a problem:".red,
+			(err as Error).toString().red
+		);
+		throw err;
 	}
-
-	return { FOLDER_PATH, fileName, fileBuffer, imageID };
 }
