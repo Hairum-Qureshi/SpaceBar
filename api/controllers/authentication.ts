@@ -144,32 +144,37 @@ const signOut = async (req: Request, res: Response) => {
 	}
 };
 
-const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
-	try {
-		const tokenHeader = req.headers.authorization;
+async function handleFirebaseGoogleAuth(
+	authFor: string,
+	res: Response,
+	req: Request
+) {
+	const tokenHeader = req.headers.authorization;
 
-		if (!tokenHeader) {
-			res.status(400).send("Invalid token or no token found");
-			return;
-		}
+	if (!tokenHeader) {
+		res.status(400).send("Invalid token or no token found");
+		return;
+	}
 
-		if (!tokenHeader) {
-			res.status(400).send("Invalid token or no token found");
-			return;
-		}
-		const decodedToken = await admin
-			.auth()
-			.verifyIdToken(tokenHeader.replace("Bearer ", ""));
+	if (!tokenHeader) {
+		res.status(400).send("Invalid token or no token found");
+		return;
+	}
 
-		// Check if the user already exists in the database
-		let user = await User.findOne({ email: decodedToken.email });
+	const decodedToken = await admin
+		.auth()
+		.verifyIdToken(tokenHeader.replace("Bearer ", ""));
 
-		if (user) {
-			generateAndSetCookie(user._id, res);
-			res.status(200).json({ userData: user });
-			return;
-		}
+	// Check if the user already exists in the database
+	let user = await User.findOne({ email: decodedToken.email });
 
+	if (user) {
+		generateAndSetCookie(user._id, res);
+		res.status(200).json({ userData: user });
+		return;
+	}
+
+	if (!user || authFor === "signUp") {
 		// generate a random password and hash it
 		const salt = await bcrypt.genSalt(10);
 		const hashedPassword = await bcrypt.hash(
@@ -180,7 +185,9 @@ const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
 		user = new User({
 			_id: decodedToken.uid,
 			email: decodedToken.email,
-			username: decodedToken.name.replaceAll(" ", "-").toLowerCase(),
+			username:
+				decodedToken.name.replaceAll(" ", "-").toLowerCase() +
+				uuidv4().slice(0, 8),
 			profilePicture: decodedToken.picture,
 			password: hashedPassword
 		});
@@ -190,6 +197,12 @@ const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
 		generateAndSetCookie(user._id, res);
 
 		res.status(200).json({ userData: user });
+	}
+}
+
+const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
+	try {
+		await handleFirebaseGoogleAuth("signIn", res, req);
 	} catch (error) {
 		console.error(
 			"Error in authentication.ts file, signInWithGoogle function controller"
@@ -200,4 +213,17 @@ const signInWithGoogle = async (req: Request, res: Response): Promise<void> => {
 	}
 };
 
-export { signUp, signIn, signOut, signInWithGoogle };
+const signUpWithGoogle = async (req: Request, res: Response): Promise<void> => {
+	try {
+		await handleFirebaseGoogleAuth("signUp", res, req);
+	} catch (error) {
+		console.error(
+			"Error in authentication.ts file, signUpWithGoogle function controller"
+				.red.bold,
+			error
+		);
+		res.status(500).json({ error: "Internal Server Error" });
+	}
+};
+
+export { signUp, signIn, signOut, signInWithGoogle, signUpWithGoogle };
