@@ -39,9 +39,11 @@ const createConversation = async (
 		}
 
 		// next check if the users have a conversation with each other
+		// note: this excludes group chats
 		const existingConversation: IConversation | undefined =
 			(await Conversation.findOne({
-				users: { $all: [friendUser._id, currUID] }
+				users: { $all: [friendUser._id, currUID] },
+				isGroupChat: false
 			})) as IConversation | undefined;
 
 		const userHasConversation = await User.findOne({
@@ -273,7 +275,7 @@ const deleteConversation = async (
 		const usersWithConversation = await User.find({
 			conversations: conversationID
 		});
-		if (usersWithConversation.length === 0) {
+		if (!usersWithConversation.length) {
 			await Conversation.findByIdAndDelete(conversationID);
 
 			// Also delete all messages associated with the conversation
@@ -307,7 +309,7 @@ const createGroupChat = async (req: Request, res: Response): Promise<void> => {
 		const { groupChatName, members } = req.body;
 		const currUID: string = req.user._id;
 
-		// TODO - think about creating a separate helper function *or* using the existing helper function when it comes to deleting all the images from Cloudinary (including the group chat photo) when the group chat gets deleted from the database
+		// TODO - think about creating a separate helper function *or* using the existing helper function when it comes to deleting all the images from ImageKit (including the group chat photo) when the group chat gets deleted from the database
 
 		if (typeof members !== "string") {
 			res.status(400).json({ error: "Members must be a string" });
