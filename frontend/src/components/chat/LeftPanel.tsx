@@ -69,7 +69,7 @@ export default function LeftPanel() {
 						onOpenModal();
 					}}
 				>
-					Add User
+					Create Chat
 				</button>
 				<input
 					type="text"
@@ -127,7 +127,7 @@ export default function LeftPanel() {
 				) : (
 					<h3 className="my-10 text-slate-500 text-center">
 						You currently don't have any conversations with anyone. Click the
-						'add user' button to start chatting with somebody
+						'Create Chat' button to start chatting with somebody
 					</h3>
 				)}
 			</div>
