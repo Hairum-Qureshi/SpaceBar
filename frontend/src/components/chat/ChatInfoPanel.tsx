@@ -100,7 +100,7 @@ export default function ChatInfoPanel() {
 					)}
 				</div>
 			</div>
-			{!conversation.isGroupChat && (
+			{!conversation?.isGroupChat && (
 				<div className="flex-shrink-0 p-4 border-t border-white">
 					<button className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded hover:cursor-pointer">
 						Block User
