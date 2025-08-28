@@ -18,7 +18,8 @@ export default function SignUp() {
 		passContainsNumsAndSymbols,
 		passwordLengthValid,
 		formErrors,
-		passwordsMatch
+		passwordsMatch,
+		handleGoogleSignUp
 	} = useAuth();
 
 	// TODO - add toast notif
@@ -64,7 +65,13 @@ export default function SignUp() {
 					>
 						<div>
 							<div className="flex items-center">
-								<button className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 mr-1 hover:cursor-pointer">
+								<button
+									className="p-2 border flex items-center justify-center border-sky-600 rounded-md w-1/2 mr-1 hover:cursor-pointer"
+									onClick={e => {
+										e.preventDefault();
+										handleGoogleSignUp();
+									}}
+								>
 									<span>
 										<FaGoogle />
 									</span>
