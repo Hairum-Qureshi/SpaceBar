@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { ImageFile } from "../interfaces";
 import { useLocation } from "react-router-dom";
 import { dataURLToFile } from "../utils/dataURLToFile";
+import { toast } from "react-toastify";
 
 interface MessagingTools {
 	sendMessage: (
@@ -41,16 +42,21 @@ export default function useMessaging(): MessagingTools {
 		}) => {
 			try {
 				const formData = new FormData();
-				formData.append("conversationID", conversationID); // move it here before the image data being appended!
 				formData.append("imagesSent", !images.length ? "false" : "true");
 
 				if (images.length) {
 					for (let i = 0; i < images.length; i++) {
-						const res: File = await dataURLToFile(images[i].dataURL);
+						const res: File = await dataURLToFile(
+							images[i].dataURL,
+							undefined,
+							undefined,
+							conversationID
+						);
 						formData.append("images", res);
 					}
 				}
 
+				formData.append("conversationID", conversationID); // move it here before the image data being appended!
 				formData.append("message", message);
 				formData.append("userID", userID);
 
@@ -58,14 +64,30 @@ export default function useMessaging(): MessagingTools {
 					`${import.meta.env.VITE_BACKEND_BASE_URL}/api/message/send`,
 					formData,
 					{
-						withCredentials: true
+						withCredentials: true,
+						headers: {
+							"Content-Type": "multipart/form-data"
+						}
 					}
 				);
 
 				return response.data;
 			} catch (error) {
-				console.error("Error posting:", error);
-				throw new Error("Failed to send message");
+				console.error("Error sending message:", error);
+				if (axios.isAxiosError(error)) {
+					toast(error.response?.data.error, {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				} else {
+					toast("An unknown error occurred", {
+						autoClose: 600,
+						hideProgressBar: true,
+						type: "error"
+					});
+				}
+				throw error;
 			}
 		},
 		onSuccess: () => {
