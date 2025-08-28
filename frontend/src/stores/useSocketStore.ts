@@ -23,7 +23,7 @@ const useSocketStore = create<SocketStore>(set => ({
 	activeUsers: [],
 	messagePayload: undefined,
 	connectSocket: userID => {
-		const socket = io("http://localhost:3000", {
+		const socket = io(`${import.meta.env.VITE_BACKEND_BASE_URL}`, {
 			auth: { userID }
 		});
 
@@ -49,7 +49,7 @@ const useSocketStore = create<SocketStore>(set => ({
 					new Notification(
 						`@${messagePayload.username} just sent you a message!`,
 						{
-							body: messagePayload.message, // truncate
+							body: messagePayload.message || "Sent an image",
 							icon: messagePayload.profilePicture
 						}
 					);
