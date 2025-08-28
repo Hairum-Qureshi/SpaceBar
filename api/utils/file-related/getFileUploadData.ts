@@ -21,7 +21,6 @@ export async function getFileUploadData(
 
 		let imageID = "";
 		if (imageFor === "pfp") {
-			console.log("RAN 1".yellow);
 			const user: IUser = (await User.findById(currUID)) as IUser;
 			imageID = user?.pfpImageID;
 			fileBuffer = fs.readFileSync(`${FOLDER_PATH}/${fileName}`);
