@@ -30,7 +30,7 @@ app.use("/api/user", user);
 app.use("/api/conversation", conversation);
 app.use("/api/message", message);
 
-const PORT: string | number = process.env.PORT || 3000;
+const PORT: string | number = process.env.PORT || 4000;
 
 server.listen(PORT, () => {
 	const startServer = async () => {
@@ -50,4 +50,3 @@ server.listen(PORT, () => {
 
 	startServer();
 });
-
