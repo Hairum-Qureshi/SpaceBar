@@ -1,5 +1,9 @@
 import express from "express";
-import { getCurrentUser, uploadProfilePicture } from "../controllers/user";
+import {
+	deleteUserAccount,
+	getCurrentUser,
+	uploadProfilePicture
+} from "../controllers/user";
 import isAuthenticated from "../middleware/isAuthenticated";
 import multer from "multer";
 import storage from "../configs/multer-config";
@@ -14,5 +18,7 @@ router.post(
 	upload.single("profilePicture"),
 	uploadProfilePicture
 );
+// TODO - maybe have middleware to prevent other users from deleting another user's account?
+router.delete("/account", isAuthenticated, deleteUserAccount);
 
 export default router;
