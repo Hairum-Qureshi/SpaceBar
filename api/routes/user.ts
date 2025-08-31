@@ -19,6 +19,6 @@ router.post(
 	uploadProfilePicture
 );
 // TODO - maybe have middleware to prevent other users from deleting another user's account?
-router.delete("/account", isAuthenticated, deleteUserAccount);
+router.patch("/account", isAuthenticated, deleteUserAccount);
 
 export default router;
