@@ -156,11 +156,6 @@ async function handleFirebaseGoogleAuth(
 		return;
 	}
 
-	if (!tokenHeader) {
-		res.status(400).send("Invalid token or no token found");
-		return;
-	}
-
 	const decodedToken = await admin
 		.auth()
 		.verifyIdToken(tokenHeader.replace("Bearer ", ""));
