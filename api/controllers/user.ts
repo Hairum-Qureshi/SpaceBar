@@ -68,12 +68,13 @@ const uploadProfilePicture = async (
 };
 
 async function handleDatabaseUserRemoval(uid: string): Promise<IUser> {
+	const uniqueID = uuidv4().substring(0, 8);
 	const user: IUser = (await User.findByIdAndUpdate(
 		uid,
 		{
 			$set: {
-				username: `DELETED_USER_${uuidv4().substring(0, 8)}`,
-				email: "DELETED_USER",
+				username: `DELETED_USER_${uniqueID}`,
+				email: `DELETED_USER_${uniqueID}@deleted.com`,
 				password: "DELETED_USER",
 				profilePicture:
 					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRx-NP_Wn_xnnzlQYXWRJorxpkeyQtkKf957g&s"
