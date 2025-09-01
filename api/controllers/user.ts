@@ -76,28 +76,29 @@ async function handleDatabaseUserRemoval(uid: string): Promise<IUser> {
 				email: "DELETED_USER",
 				password: "DELETED_USER",
 				profilePicture:
-					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRx-NP_Wn_xnnzlQYXWRJorxpkeyQtkKf957g&s",
-				isDeleted: true,
-				deletedAt: new Date()
+					"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRx-NP_Wn_xnnzlQYXWRJorxpkeyQtkKf957g&s"
 			}
 		},
 		{ new: true }
 	)) as IUser;
 
 	// TODO - may need to check if it was actually deleted from Image Kit
+
 	if (user.pfpImageID) {
 		imagekit.deleteFile(user.pfpImageID, error => {
 			if (error) console.log(error);
 		});
+
+		const updatedUser: IUser = (await User.findByIdAndUpdate(uid, {
+			$set: {
+				pfpImageID: ""
+			}
+		})) as IUser;
+
+		return updatedUser;
 	}
 
-	const updatedUser: IUser = (await User.findByIdAndUpdate(uid, {
-		$set: {
-			pfpImageID: ""
-		}
-	})) as IUser;
-
-	return updatedUser;
+	return user;
 }
 
 const deleteUserAccount = async (
